@@ -1,0 +1,11 @@
+# LLM API Tokens Configuration Example
+# 复制此文件为 llm_config.yml 并填入你的 API 密钥
+
+openai:
+  api_key: "sk-your-openai-key-here"
+
+anthropic:
+  api_key: "sk-ant-your-anthropic-key-here"
+
+custom:
+  api_key: ""

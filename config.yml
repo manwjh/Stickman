@@ -1,0 +1,68 @@
+# System Configuration
+# AI火柴人动画生成器 - 系统配置文件
+
+# LLM提供商配置
+llm:
+  # 默认提供商: openai, anthropic, perfxcloud 或 custom
+  provider: perfxcloud
+  
+  # OpenAI配置
+  openai:
+    model: "gpt-4-turbo-preview"
+    api_base: ""  # 自定义API地址（如使用代理），留空使用默认
+    organization: ""  # 组织ID（可选）
+    timeout: 60  # 请求超时时间（秒）
+    max_retries: 3  # 最大重试次数
+    temperature: 0.7  # 生成温度 (0-1)
+  
+  # Anthropic配置
+  anthropic:
+    model: "claude-3-sonnet-20240229"
+    api_base: ""  # 自定义API地址
+    timeout: 60
+    max_retries: 3
+    temperature: 0.7
+    max_tokens: 4096
+  
+  # PerfXCloud配置
+  perfxcloud:
+    model: "Qwen3-Next-80B-Instruct"
+    api_base: "https://deepseek.perfxlab.cn/v1"
+    timeout: 120
+    max_retries: 3
+    temperature: 0.7
+    max_tokens: 4096
+    max_context_tokens: 128000
+
+# 服务器配置
+server:
+  host: "0.0.0.0"  # 监听地址，0.0.0.0 表示所有网络接口
+  port: 5001  # 端口号（改为5001避免冲突）
+  debug: true  # 调试模式（生产环境请设为 false）
+  secret_key: "dev-secret-key-change-in-production"  # Flask secret key
+
+# 动画配置
+animation:
+  # 画布尺寸
+  canvas:
+    width: 800  # 宽度（像素）
+    height: 600  # 高度（像素）
+  
+  # 默认角色颜色
+  colors:
+    - "#2196F3"  # 蓝色
+    - "#E91E63"  # 粉色
+    - "#4CAF50"  # 绿色
+    - "#FF9800"  # 橙色
+    - "#9C27B0"  # 紫色
+  
+  # 性能限制
+  max_scenes: 10  # 最大场景数
+  max_characters: 5  # 最大角色数
+  max_frames_per_scene: 20  # 每个场景最大帧数
+
+# 日志配置
+logging:
+  level: "INFO"  # 日志级别: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: ""  # 日志文件路径，留空则只输出到控制台

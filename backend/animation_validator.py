@@ -1,12 +1,12 @@
 """
-动画数据验证器
+Animation Data Validator
 
-使用 Pydantic 验证 LLM 生成的动画数据：
-- 数据结构完整性
-- 坐标范围检查
-- 类型安全验证
+Uses Pydantic to validate LLM-generated animation data:
+- Data structure integrity
+- Coordinate range checking
+- Type safety validation
 
-Author: Your Name
+Author: Shenzhen Wang & AI
 License: MIT
 """
 from typing import Dict, Any, List

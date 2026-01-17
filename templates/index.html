@@ -1,50 +1,59 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎬 AI火柴人故事动画生成器</title>
+    <title>🎬 AI Stick Figure Story Animator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <h1>🎬 AI火柴人故事动画生成器</h1>
-            <p class="subtitle">用自然语言描述故事，让AI自动生成流畅的火柴人动画</p>
+            <div class="header-content">
+                <h1 data-i18n="page.title">🎬 AI Stick Figure Story Animator</h1>
+                <p class="subtitle" data-i18n="page.subtitle">Describe your story in natural language, let AI generate smooth stick figure animations</p>
+            </div>
+            <div class="language-switcher">
+                <button id="langToggle" class="lang-btn" title="Switch Language / 切换语言">
+                    <span id="langIcon">🌐</span>
+                    <span id="langText">中文</span>
+                </button>
+            </div>
         </header>
 
         <!-- Main Content -->
         <main class="main-content">
             <!-- Input Section -->
             <section class="input-section card">
-                <h2>📝 故事输入</h2>
+                <h2 data-i18n="input.title">📝 Story Input</h2>
                 <textarea 
                     id="storyInput" 
                     class="story-input" 
-                    placeholder="在这里输入你的故事...&#10;&#10;示例：&#10;小明从左边走进来，看到一个球，兴奋地跳起来，然后弯腰捡起球，高兴地举起球庆祝。"
+                    data-i18n-placeholder="input.placeholder"
+                    placeholder="Enter your story here...&#10;&#10;Example:&#10;A person walks in from the left, sees a ball, jumps excitedly, then bends down to pick up the ball and celebrates by raising it high."
                     rows="6"
                 ></textarea>
                 
                 <div class="button-group">
                     <button id="generateBtn" class="btn btn-primary">
                         <span class="btn-icon">✨</span>
-                        生成动画
+                        <span data-i18n="input.generate">Generate Animation</span>
                     </button>
                     <button id="clearBtn" class="btn btn-secondary">
                         <span class="btn-icon">🗑️</span>
-                        清空
+                        <span data-i18n="input.clear">Clear</span>
                     </button>
                 </div>
 
                 <!-- Examples -->
                 <div class="examples">
-                    <h3>💡 示例故事</h3>
+                    <h3 data-i18n="examples.title">💡 Example Stories</h3>
                     <div class="example-chips">
-                        <button class="chip" data-example="一个人站着，然后挥手打招呼">简单挥手</button>
-                        <button class="chip" data-example="小明从左边跑到右边，然后跳起来庆祝">跑步跳跃</button>
-                        <button class="chip" data-example="一个人走进来，弯腰捡起东西，然后高兴地举起来">弯腰捡物</button>
-                        <button class="chip" data-example="小明站在左边，小红站在右边，他们走向对方，最后击掌庆祝">双人互动</button>
+                        <button class="chip" data-example-key="examples.simple" data-i18n="examples.simple">A person stands and waves hello</button>
+                        <button class="chip" data-example-key="examples.run" data-i18n="examples.run">Someone runs from left to right, then jumps to celebrate</button>
+                        <button class="chip" data-example-key="examples.pickup" data-i18n="examples.pickup">A person walks in, bends down to pick something up, then raises it happily</button>
+                        <button class="chip" data-example-key="examples.duo" data-i18n="examples.duo">Two people stand on opposite sides, walk towards each other, and high-five to celebrate</button>
                     </div>
                 </div>
             </section>
@@ -52,25 +61,25 @@
             <!-- Animation Preview Section -->
             <section class="preview-section card">
                 <div class="preview-header">
-                    <h2>🎥 动画预览</h2>
+                    <h2 data-i18n="preview.title">🎥 Animation Preview</h2>
                     <div class="controls" id="animationControls" style="display: none;">
-                        <button id="playBtn" class="control-btn" title="播放">▶️</button>
-                        <button id="pauseBtn" class="control-btn" title="暂停">⏸️</button>
-                        <button id="restartBtn" class="control-btn" title="重新开始">🔄</button>
-                        <button id="downloadBtn" class="control-btn" title="下载动画">💾</button>
+                        <button id="playBtn" class="control-btn" data-i18n-title="preview.play" title="Play">▶️</button>
+                        <button id="pauseBtn" class="control-btn" data-i18n-title="preview.pause" title="Pause">⏸️</button>
+                        <button id="restartBtn" class="control-btn" data-i18n-title="preview.restart" title="Restart">🔄</button>
+                        <button id="downloadBtn" class="control-btn" data-i18n-title="preview.download" title="Download">💾</button>
                     </div>
                 </div>
 
                 <!-- Loading State -->
                 <div id="loadingState" class="loading-state" style="display: none;">
                     <div class="spinner"></div>
-                    <p>AI正在生成动画...</p>
+                    <p data-i18n="preview.loading">AI is generating animation...</p>
                 </div>
 
                 <!-- Empty State -->
                 <div id="emptyState" class="empty-state">
                     <div class="empty-icon">🎬</div>
-                    <p>输入故事并点击"生成动画"开始创作</p>
+                    <p data-i18n="preview.empty">Enter a story and click "Generate Animation" to start creating</p>
                 </div>
 
                 <!-- Animation Canvas -->
@@ -90,17 +99,18 @@
 
                 <!-- Animation Info -->
                 <div id="animationInfo" class="animation-info" style="display: none;">
-                    <p><strong>标题：</strong><span id="infoTitle"></span></p>
-                    <p><strong>描述：</strong><span id="infoDescription"></span></p>
-                    <p><strong>场景数：</strong><span id="infoScenes"></span></p>
-                    <p><strong>角色数：</strong><span id="infoCharacters"></span></p>
+                    <p><strong data-i18n="info.title">Title:</strong><span id="infoTitle"></span></p>
+                    <p><strong data-i18n="info.description">Description:</strong><span id="infoDescription"></span></p>
+                    <p><strong data-i18n="info.scenes">Scenes:</strong><span id="infoScenes"></span></p>
+                    <p><strong data-i18n="info.characters">Characters:</strong><span id="infoCharacters"></span></p>
                 </div>
             </section>
         </main>
 
         <!-- Footer -->
         <footer class="footer">
-            <p>Powered by AI | Made with ❤️</p>
+            <p data-i18n="footer.text">Powered by AI | Made with ❤️</p>
+            <p class="version">v<span id="appVersion">0.1.0</span></p>
         </footer>
     </div>
 
@@ -109,6 +119,7 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     <script src="{{ url_for('static', filename='js/animator.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>

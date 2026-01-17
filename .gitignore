@@ -9,7 +9,7 @@ env/
 ENV/
 .venv
 
-# Sensitive Information (令牌和密钥)
+# Sensitive Information (tokens and keys)
 llm_config.yml
 .env
 .env.*
@@ -31,7 +31,7 @@ credentials/
 .DS_Store
 Thumbs.db
 
-# Logs (日志文件可能包含敏感信息)
+# Logs (may contain sensitive information)
 *.log
 logs/
 *.log.*

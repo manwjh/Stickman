@@ -1,67 +1,83 @@
 """
-Flask 应用主程序 - AI 火柴人故事动画生成器
+Flask Application - AI Stick Figure Story Animator
 
-提供 RESTful API 接口，接收用户故事描述，
-通过 LLM 生成火柴人动画数据。
+Provides RESTful API endpoints to receive user story descriptions
+and generate stick figure animation data through LLM.
 
-主要端点:
-- GET  /              - Web 界面
-- POST /api/generate - 生成动画
-- GET  /api/health   - 健康检查
+Main endpoints:
+- GET  /              - Web interface
+- POST /api/generate - Generate animation
+- GET  /api/health   - Health check
+- GET  /api/version  - Version information
 
-Author: Your Name
+Author: Shenzhen Wang & AI
 License: MIT
+Version: 0.1.0
 """
 import os
 import sys
 import json
 import logging
+from pathlib import Path
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 
-# 首先加载配置到环境变量
+# Version information
+__version__ = "0.1.0"
+
+def get_version():
+    """Get version from VERSION file or fallback to __version__"""
+    try:
+        version_file = Path(__file__).parent / 'VERSION'
+        if version_file.exists():
+            return version_file.read_text().strip()
+    except Exception:
+        pass
+    return __version__
+
+# First, load configuration into environment variables
 from backend.config_loader import load_config_to_env
 
 try:
     config_loader = load_config_to_env('config.yml', 'llm_config.yml')
 except FileNotFoundError as e:
     print("=" * 60)
-    print("❌ 配置文件不存在")
+    print("❌ Configuration file not found")
     print("=" * 60)
     print()
     print(str(e))
     print()
-    print("请执行以下步骤:")
-    print("1. 确保 config.yml 存在（系统配置）")
-    print("2. 复制 LLM 令牌配置:")
+    print("Please follow these steps:")
+    print("1. Ensure config.yml exists (system configuration)")
+    print("2. Copy LLM token configuration:")
     print("   cp llm_config.example.yml llm_config.yml")
-    print("3. 编辑 llm_config.yml 文件，填入你的API密钥")
-    print("4. 重新运行程序")
+    print("3. Edit llm_config.yml and fill in your API key")
+    print("4. Run the program again")
     print()
     sys.exit(1)
 except ValueError as e:
     print("=" * 60)
-    print("❌ 配置验证失败")
+    print("❌ Configuration validation failed")
     print("=" * 60)
     print()
     print(str(e))
     print()
-    print("请检查 llm_config.yml 文件中的配置")
+    print("Please check your llm_config.yml file")
     print()
     sys.exit(1)
 except Exception as e:
     print("=" * 60)
-    print("❌ 加载配置失败")
+    print("❌ Failed to load configuration")
     print("=" * 60)
     print()
-    print(f"错误: {e}")
+    print(f"Error: {e}")
     print()
     sys.exit(1)
 
 from backend.llm_service import get_llm_service
 from backend.animation_validator import validate_animation_data
 
-# 配置日志
+# Configure logging
 log_level = os.getenv('LOG_LEVEL', 'INFO')
 log_format = os.getenv('LOG_FORMAT', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 log_file = os.getenv('LOG_FILE', '')
@@ -82,7 +98,7 @@ CORS(app)
 
 # Configuration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
-app.config['JSON_AS_ASCII'] = False  # Support Chinese characters
+app.config['JSON_AS_ASCII'] = False  # Support non-ASCII characters (Chinese, etc.)
 
 
 @app.route('/')
@@ -135,7 +151,7 @@ def generate_animation():
             validated_data = validate_animation_data(animation_data)
         except ValueError as ve:
             # If validation fails, return raw data with warning
-            print(f"Validation warning: {str(ve)}")
+            logger.warning(f"Validation warning: {str(ve)}")
             validated_data = animation_data
         
         return jsonify({
@@ -145,7 +161,7 @@ def generate_animation():
         })
     
     except Exception as e:
-        print(f"Error generating animation: {str(e)}")
+        logger.error(f"Error generating animation: {str(e)}")
         return jsonify({
             'success': False,
             'message': f'Error generating animation: {str(e)}'
@@ -157,7 +173,19 @@ def health_check():
     """Health check endpoint"""
     return jsonify({
         'status': 'healthy',
+        'version': get_version(),
         'provider': os.getenv('LLM_PROVIDER', 'openai')
+    })
+
+
+@app.route('/api/version', methods=['GET'])
+def version_info():
+    """Version information endpoint"""
+    return jsonify({
+        'version': get_version(),
+        'name': 'AI Stick Figure Story Animator',
+        'author': 'Shenzhen Wang & AI',
+        'license': 'MIT'
     })
 
 
@@ -184,8 +212,11 @@ if __name__ == '__main__':
     port = int(os.getenv('FLASK_PORT', 5000))
     debug = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
     
+    version = get_version()
+    
     print("=" * 60)
     print("🎬 AI Stick Figure Story Animator")
+    print(f"   Version {version}")
     print("=" * 60)
     print(f"🌐 Server: http://{host}:{port}")
     
@@ -199,11 +230,11 @@ if __name__ == '__main__':
     print(f"📊 Log Level: {log_level}")
     print("=" * 60)
     print()
-    print("📄 配置文件:")
-    print("   - config.yml (系统配置)")
-    print("   - llm_config.yml (API令牌)")
+    print("📄 Configuration Files:")
+    print("   - config.yml (System Configuration)")
+    print("   - llm_config.yml (API Tokens)")
     print()
-    print("详细配置（敏感信息已隐藏）:")
+    print("Detailed Configuration (Sensitive Info Masked):")
     print(config_loader.display())
     print()
     print("=" * 60)

@@ -1,180 +1,215 @@
-# 🎬 AI 火柴人故事动画生成器
+# 🎬 AI Stick Figure Story Animator
+
+[中文文档](README.zh-CN.md) | English
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
 [![LiteLLM](https://img.shields.io/badge/LiteLLM-1.57+-green.svg)](https://github.com/BerriAI/litellm)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 通过自然语言描述故事情节，让 AI 自动生成流畅的火柴人 SVG 动画
+> Describe stories in natural language and let AI automatically generate smooth stick figure SVG animations
 
-## ✨ 特性
+## ✨ Features
 
-- 🤖 **完全 AI 驱动** - 动作由 LLM 实时生成，无需预定义模板
-- 🎭 **自然语言输入** - 用中文描述故事，AI 自动转换为动画
-- 🔌 **统一接入层** - LiteLLM 支持 100+ LLM 提供商
-- 🎨 **专业动画** - SVG 矢量图形 + GSAP 动画引擎
-- 🌐 **现代化界面** - 响应式 Web UI，即时预览
-- ⚙️ **灵活配置** - YAML 配置，敏感信息分离
+- 🤖 **Fully AI-Powered** - Actions generated in real-time by LLM, no predefined templates needed
+- 🎭 **Natural Language Input** - Describe stories in your language, AI converts them to animations
+- 🔌 **Unified Access Layer** - LiteLLM supports 100+ LLM providers
+- 🎨 **Professional Animation** - SVG vector graphics + GSAP animation engine
+- 🌐 **Modern Interface** - Responsive Web UI with instant preview
+- 🌍 **Internationalization** - Built-in support for English and Chinese
+- ⚙️ **Flexible Configuration** - YAML configuration with separated sensitive information
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 1. 安装依赖
+### 1. Install Dependencies
 
 ```bash
-# 复制并编辑配置
+# Clone the repository
+git clone https://github.com/your-username/stickman.git
+cd stickman
+
+# Copy and edit configuration
 cp llm_config.example.yml llm_config.yml
 
-# 编辑 llm_config.yml 填入你的 API 密钥
+# Edit llm_config.yml and fill in your API key
 # openai.api_key: "sk-your-key-here"
 
-# 安装依赖
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. 启动应用
+### 2. Start Application
 
 ```bash
-# 方式 1: 使用启动脚本
+# Option 1: Use startup script
 ./start.sh              # macOS/Linux
 start.bat               # Windows
 
-# 方式 2: 直接启动
+# Option 2: Direct start
 python3 app.py
 ```
 
-### 3. 访问应用
+### 3. Access Application
 
-打开浏览器访问: **http://localhost:5001**
+Open your browser and visit: **http://localhost:5001**
 
-## 💡 使用示例
+## 💡 Usage Examples
 
-### 简单场景
+### Simple Scene
 ```
-一个人站着，然后挥手打招呼
-```
-
-### 复杂场景
-```
-小明从左边跑到右边，看到一个球，兴奋地跳起来，然后弯腰捡起球，高兴地举起球庆祝
+A person stands and waves hello
 ```
 
-### 多角色场景
+### Complex Scene
 ```
-小明站在左边，小红站在右边。他们走向对方，挥手打招呼，最后击掌庆祝
-```
-
-### 武术场景
-```
-小明拿着刀表演了一段武术动作
+Someone runs in from the left, sees a ball, jumps excitedly, then bends down to pick up the ball and celebrates by raising it high
 ```
 
-## 🏗️ 项目结构
+### Multi-Character Scene
+```
+Two people stand on opposite sides, walk towards each other, wave hello, and finally high-five to celebrate
+```
+
+### Martial Arts Scene
+```
+A person performs a martial arts routine with a sword
+```
+
+## 🏗️ Project Structure
 
 ```
-stick_figure/
-├── app.py                      # Flask 主应用
-├── requirements.txt            # Python 依赖
-├── config.yml                  # 系统配置 (可提交)
-├── llm_config.yml             # API 令牌 (不提交)
+stickman/
+├── app.py                      # Flask main application
+├── requirements.txt            # Python dependencies
+├── config.yml                  # System configuration (can commit)
+├── llm_config.yml             # API tokens (do not commit)
 │
-├── backend/                    # 后端服务
-│   ├── config_loader.py       # 配置加载器
-│   ├── llm_service.py         # LLM 服务 (LiteLLM)
-│   ├── prompt_template.py     # Prompt 模板
-│   └── animation_validator.py # 数据验证
+├── backend/                    # Backend services
+│   ├── config_loader.py       # Configuration loader
+│   ├── llm_service.py         # LLM service (LiteLLM)
+│   ├── prompt_template.py     # Prompt templates
+│   └── animation_validator.py # Data validation
 │
-├── templates/                  # HTML 模板
+├── templates/                  # HTML templates
 │   └── index.html
 │
-├── static/                     # 静态资源
+├── static/                     # Static assets
 │   ├── css/style.css
 │   └── js/
-│       ├── animator.js        # SVG 动画引擎
-│       └── app.js             # 前端逻辑
+│       ├── i18n.js            # Internationalization
+│       ├── animator.js        # SVG animation engine
+│       └── app.js             # Frontend logic
 │
-└── docs/                       # 文档目录
-    ├── API.md                 # API 文档
-    ├── CONFIG.md              # 配置指南
-    ├── DEVELOPMENT.md         # 开发文档
-    └── ARCHITECTURE.md        # 架构说明
+└── docs/                       # Documentation
+    ├── en/                    # English docs
+    └── zh-CN/                 # Chinese docs
 ```
 
-## ⚙️ 配置说明
+## ⚙️ Configuration
 
-### config.yml (系统配置)
+### config.yml (System Configuration)
 ```yaml
 llm:
-  provider: openai              # 或 anthropic, perfxcloud
+  provider: openai              # or anthropic, perfxcloud
   openai:
     model: gpt-4-turbo-preview
     temperature: 0.7
     max_tokens: 4096
 ```
 
-### llm_config.yml (API 密钥)
+### llm_config.yml (API Keys)
 ```yaml
 openai:
   api_key: "sk-your-key-here"
 ```
 
-详见: [配置文档](docs/CONFIG.md)
+See: [Configuration Guide](docs/en/CONFIG.md)
 
-## 🔌 支持的 LLM 提供商
+## 🔌 Supported LLM Providers
 
-使用 LiteLLM 统一接入层，支持:
+Using LiteLLM unified access layer, supports:
 
 - ✅ OpenAI (GPT-4, GPT-3.5)
 - ✅ Anthropic (Claude-3)
 - ✅ PerfXCloud (Qwen)
 - 🔄 Azure OpenAI
 - 🔄 Google (Gemini)
-- 🔄 更多 100+ 提供商...
+- 🔄 100+ more providers...
 
-## 📊 技术栈
+## 📊 Tech Stack
 
-| 组件 | 技术 |
-|------|------|
-| 后端框架 | Flask 3.0 |
-| LLM 接入 | LiteLLM |
-| 数据验证 | Pydantic |
-| 前端 | Vanilla JavaScript |
-| 动画库 | GSAP 3.12 |
-| 图形 | SVG |
+| Component | Technology |
+|-----------|-----------|
+| Backend Framework | Flask 3.0 |
+| LLM Access | LiteLLM |
+| Data Validation | Pydantic |
+| Frontend | Vanilla JavaScript |
+| Animation Library | GSAP 3.12 |
+| Graphics | SVG |
+| Internationalization | Custom i18n |
 
-## 📖 文档
+## 📖 Documentation
 
-- [快速开始](docs/GETTING_STARTED.md) - 5 分钟上手
-- [配置指南](docs/CONFIG.md) - 详细配置说明
-- [API 文档](docs/API.md) - 接口文档
-- [开发文档](docs/DEVELOPMENT.md) - 二次开发
-- [架构说明](docs/ARCHITECTURE.md) - 系统设计
+- [Quick Start](docs/en/GETTING_STARTED.md) - Get up and running in 5 minutes
+- [Configuration Guide](docs/en/CONFIG.md) - Detailed configuration instructions
+- [API Documentation](docs/en/API.md) - API reference
+- [Development Guide](docs/en/DEVELOPMENT.md) - For contributors
+- [Architecture](docs/en/ARCHITECTURE.md) - System design
 
-## 🎯 性能指标
+## 🎯 Performance Metrics
 
-- **生成速度**: 3-15 秒 (取决于复杂度)
-- **动画帧率**: 60 FPS
-- **支持角色**: 1-5 个
-- **场景数量**: 1-10 个
+- **Generation Speed**: 3-15 seconds (depending on complexity)
+- **Animation Frame Rate**: 60 FPS
+- **Supported Characters**: 1-5
+- **Scene Count**: 1-10
 
-## 🤝 贡献
+## 🤝 Contributing
 
-欢迎提交 Issue 和 Pull Request！
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-## 📄 许可证
+### Development Setup
+
+```bash
+# Clone repository
+git clone https://github.com/your-username/stickman.git
+cd stickman
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run tests
+python -m pytest tests/
+```
+
+## 👤 Author
+
+**Shenzhen Wang & AI**
+
+- 📧 Email: manwjh@126.com
+- 🐦 Twitter: [@cpswang](https://twitter.com/cpswang)
+- 🌐 Website: [zenheart.net](https://zenheart.net)
+
+## 📄 License
 
 [MIT License](LICENSE)
 
-## 🙏 致谢
+## 🙏 Acknowledgments
 
-- [LiteLLM](https://github.com/BerriAI/litellm) - 统一 LLM 接入
-- [GSAP](https://greensock.com/gsap/) - 动画引擎
-- [Flask](https://flask.palletsprojects.com/) - Web 框架
+- [LiteLLM](https://github.com/BerriAI/litellm) - Unified LLM access
+- [GSAP](https://greensock.com/gsap/) - Animation engine
+- [Flask](https://flask.palletsprojects.com/) - Web framework
 
 ---
 
 <div align="center">
 
-**Made with ❤️ and AI**
+**Made with ❤️ by Shenzhen Wang & AI**
 
-[开始使用](docs/GETTING_STARTED.md) · [查看演示](#) · [报告问题](https://github.com/your-repo/issues)
+📧 manwjh@126.com · 🐦 [@cpswang](https://twitter.com/cpswang) · 🌐 [zenheart.net](https://zenheart.net)
+
+[Get Started](docs/en/GETTING_STARTED.md) · [Report Issue](https://github.com/your-repo/issues) · [中文文档](README.zh-CN.md)
 
 </div>

@@ -1,15 +1,15 @@
 """
-LLM Service - 统一 LLM 调用服务
+LLM Service - Unified LLM Calling Service
 
-使用 LiteLLM 作为统一接入层，支持多个 LLM 提供商。
+Uses LiteLLM as a unified access layer, supporting multiple LLM providers.
 
-支持的提供商:
+Supported providers:
 - OpenAI (GPT-4, GPT-3.5)
 - Anthropic (Claude-3)
 - PerfXCloud (Qwen)
-- 更多 100+ 提供商...
+- 100+ more providers...
 
-Author: Your Name
+Author: Shenzhen Wang & AI
 License: MIT
 """
 import os
@@ -18,21 +18,21 @@ from typing import Dict, Any, Optional
 import litellm
 from .prompt_template import get_animation_prompt
 
-# 配置 LiteLLM
-litellm.suppress_debug_info = True  # 抑制调试信息
-litellm.set_verbose = False  # 关闭详细日志
+# Configure LiteLLM
+litellm.suppress_debug_info = True  # Suppress debug info
+litellm.set_verbose = False  # Disable verbose logging
 
 
 class LLMService:
     """Service for generating animations using LLM via LiteLLM"""
     
     def __init__(self):
-        # 从环境变量读取配置
+        # Read configuration from environment variables
         self.provider = os.getenv('LLM_PROVIDER', 'openai').lower()
         self._setup_provider()
     
     def _setup_provider(self):
-        """配置 LLM 提供商"""
+        """Configure LLM provider"""
         if self.provider == 'openai':
             self._setup_openai()
         elif self.provider == 'anthropic':
@@ -43,7 +43,7 @@ class LLMService:
             raise ValueError(f"Unsupported LLM provider: {self.provider}")
     
     def _setup_openai(self):
-        """配置 OpenAI"""
+        """Configure OpenAI"""
         self.model = f"openai/{os.getenv('OPENAI_MODEL', 'gpt-4-turbo-preview')}"
         self.api_key = os.getenv('OPENAI_API_KEY')
         self.api_base = os.getenv('OPENAI_API_BASE', None)
@@ -53,13 +53,13 @@ class LLMService:
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY not found in environment")
         
-        # 设置 LiteLLM 环境变量
+        # Set LiteLLM environment variables
         os.environ['OPENAI_API_KEY'] = self.api_key
         if self.api_base:
             os.environ['OPENAI_API_BASE'] = self.api_base
     
     def _setup_anthropic(self):
-        """配置 Anthropic"""
+        """Configure Anthropic"""
         self.model = f"anthropic/{os.getenv('ANTHROPIC_MODEL', 'claude-3-sonnet-20240229')}"
         self.api_key = os.getenv('ANTHROPIC_API_KEY')
         self.api_base = os.getenv('ANTHROPIC_API_BASE', None)
@@ -69,13 +69,13 @@ class LLMService:
         if not self.api_key:
             raise ValueError("ANTHROPIC_API_KEY not found in environment")
         
-        # 设置 LiteLLM 环境变量
+        # Set LiteLLM environment variables
         os.environ['ANTHROPIC_API_KEY'] = self.api_key
         if self.api_base:
             os.environ['ANTHROPIC_API_BASE'] = self.api_base
     
     def _setup_perfxcloud(self):
-        """配置 PerfXCloud (OpenAI 兼容)"""
+        """Configure PerfXCloud (OpenAI compatible)"""
         self.model = os.getenv('PERFXCLOUD_MODEL', 'Qwen3-Next-80B-Instruct')
         self.api_key = os.getenv('PERFXCLOUD_API_KEY')
         self.api_base = os.getenv('PERFXCLOUD_API_BASE')
@@ -87,7 +87,7 @@ class LLMService:
         if not self.api_base:
             raise ValueError("PERFXCLOUD_API_BASE not found in environment")
         
-        # LiteLLM 使用 openai/ 前缀配合 api_base 来调用 OpenAI 兼容接口
+        # LiteLLM uses openai/ prefix with api_base to call OpenAI-compatible interfaces
         self.model = f"openai/{self.model}"
     
     def generate_animation(self, story: str) -> Dict[str, Any]:
@@ -103,7 +103,7 @@ class LLMService:
         prompt = get_animation_prompt(story)
         
         try:
-            # 构建请求参数
+            # Build request parameters
             kwargs = {
                 'model': self.model,
                 'messages': [
@@ -120,24 +120,24 @@ class LLMService:
                 'max_tokens': self.max_tokens,
             }
             
-            # 添加 API key
+            # Add API key
             kwargs['api_key'] = self.api_key
             
-            # 如果是自定义 API base (PerfXCloud)
+            # If custom API base (PerfXCloud)
             if self.provider == 'perfxcloud':
                 kwargs['api_base'] = self.api_base
             
-            # 对于 OpenAI 和兼容接口，请求 JSON 格式
+            # For OpenAI and compatible interfaces, request JSON format
             if self.provider in ['openai', 'perfxcloud']:
                 kwargs['response_format'] = {"type": "json_object"}
             
-            # 调用 LiteLLM
+            # Call LiteLLM
             response = litellm.completion(**kwargs)
             
-            # 解析响应
+            # Parse response
             content = response.choices[0].message.content
             
-            # 对于 Anthropic，可能需要提取 JSON
+            # For Anthropic, may need to extract JSON
             if self.provider == 'anthropic':
                 if "```json" in content:
                     content = content.split("```json")[1].split("```")[0].strip()

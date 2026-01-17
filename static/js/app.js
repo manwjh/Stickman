@@ -1,5 +1,6 @@
 /**
  * App.js - Main Application Logic
+ * Handles user interactions and animation generation
  */
 
 // DOM Elements
@@ -10,6 +11,8 @@ const playBtn = document.getElementById('playBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const restartBtn = document.getElementById('restartBtn');
 const downloadBtn = document.getElementById('downloadBtn');
+const langToggle = document.getElementById('langToggle');
+const langText = document.getElementById('langText');
 
 const loadingState = document.getElementById('loadingState');
 const emptyState = document.getElementById('emptyState');
@@ -79,7 +82,7 @@ async function generateAnimation() {
     const story = storyInput.value.trim();
     
     if (!story) {
-        showToast('请输入故事内容', 'error');
+        showToast(i18n.t('toast.empty_story'), 'error');
         return;
     }
     
@@ -97,7 +100,7 @@ async function generateAnimation() {
         const result = await response.json();
         
         if (!result.success) {
-            throw new Error(result.message || '生成失败');
+            throw new Error(result.message || i18n.t('toast.generate_failed'));
         }
         
         // Load animation data
@@ -114,11 +117,11 @@ async function generateAnimation() {
             animator.play();
         }, 500);
         
-        showToast('动画生成成功！', 'success');
+        showToast(i18n.t('toast.generate_success'), 'success');
         
     } catch (error) {
         console.error('Generation error:', error);
-        showToast(`生成失败: ${error.message}`, 'error');
+        showToast(`${i18n.t('toast.generate_failed')}: ${error.message}`, 'error');
         updateUIState('empty');
     }
 }
@@ -127,8 +130,8 @@ async function generateAnimation() {
  * Update animation info display
  */
 function updateAnimationInfo(data) {
-    document.getElementById('infoTitle').textContent = data.title || '未命名';
-    document.getElementById('infoDescription').textContent = data.description || '无描述';
+    document.getElementById('infoTitle').textContent = data.title || i18n.t('info.untitled');
+    document.getElementById('infoDescription').textContent = data.description || i18n.t('info.no_description');
     document.getElementById('infoScenes').textContent = data.scenes.length;
     document.getElementById('infoCharacters').textContent = data.characters.length;
 }
@@ -144,8 +147,10 @@ function clearInput() {
 /**
  * Load example story
  */
-function loadExample(example) {
-    storyInput.value = example;
+function loadExample(exampleKey) {
+    // Get translated example text
+    const exampleText = i18n.t(exampleKey);
+    storyInput.value = exampleText;
     storyInput.focus();
 }
 
@@ -155,11 +160,19 @@ function loadExample(example) {
 function downloadAnimation() {
     try {
         animator.exportSVG();
-        showToast('动画已下载', 'success');
+        showToast(i18n.t('toast.download_success'), 'success');
     } catch (error) {
         console.error('Download error:', error);
-        showToast('下载失败', 'error');
+        showToast(i18n.t('toast.download_failed'), 'error');
     }
+}
+
+/**
+ * Update language toggle button text
+ */
+function updateLanguageButton() {
+    const currentLang = i18n.getCurrentLanguage();
+    langText.textContent = currentLang === 'en' ? '中文' : 'English';
 }
 
 // Event Listeners
@@ -185,11 +198,19 @@ restartBtn.addEventListener('click', () => {
 
 downloadBtn.addEventListener('click', downloadAnimation);
 
-// Example chips
+// Language toggle
+langToggle.addEventListener('click', () => {
+    i18n.toggleLanguage();
+    updateLanguageButton();
+});
+
+// Example chips - use data-example-key instead of data-example
 document.querySelectorAll('.chip').forEach(chip => {
     chip.addEventListener('click', (e) => {
-        const example = e.target.dataset.example;
-        loadExample(example);
+        const exampleKey = e.target.getAttribute('data-example-key');
+        if (exampleKey) {
+            loadExample(exampleKey);
+        }
     });
 });
 
@@ -202,5 +223,17 @@ storyInput.addEventListener('keydown', (e) => {
 
 // Initialize
 updateUIState('empty');
+updateLanguageButton();
 
-console.log('🎬 AI Stick Figure Story Animator initialized');
+// Fetch and display version
+fetch(`${API_BASE}/api/version`)
+    .then(response => response.json())
+    .then(data => {
+        const versionEl = document.getElementById('appVersion');
+        if (versionEl && data.version) {
+            versionEl.textContent = data.version;
+        }
+    })
+    .catch(err => console.log('Could not fetch version'));
+
+console.log(i18n.t('console.initialized'));

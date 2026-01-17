@@ -1,14 +1,14 @@
 """
-Prompt 模板生成器
+Prompt Template Generator
 
-为 LLM 生成结构化的提示词，包含：
-- 火柴人结构定义
-- 坐标系统说明
-- 物理规律约束
-- 输出格式要求
-- 动作设计指导
+Generates structured prompts for LLM, including:
+- Stick figure structure definition
+- Coordinate system description
+- Physics constraints
+- Output format requirements
+- Action design guidelines
 
-Author: Your Name
+Author: Shenzhen Wang & AI
 License: MIT
 """
 
@@ -23,66 +23,66 @@ def get_animation_prompt(story: str) -> str:
     Returns:
         Complete prompt for LLM
     """
-    return f"""你是一个专业的火柴人动画生成器。请根据用户的故事描述，生成一系列SVG动画关键帧。
+    return f"""You are a professional stick figure animation generator. Based on the user's story description, generate a series of SVG animation keyframes.
 
-# 火柴人结构定义
+# Stick Figure Structure Definition
 
-每个火柴人由以下部分组成：
-- **头部 (head)**: 圆形，属性 {{ "cx": x坐标, "cy": y坐标, "r": 半径(固定20) }}
-- **身体 (body)**: 线段，属性 {{ "x1": 起点x, "y1": 起点y, "x2": 终点x, "y2": 终点y }}
-- **左臂 (left_arm)**: 线段，从肩膀到手
-- **右臂 (right_arm)**: 线段，从肩膀到手
-- **左腿 (left_leg)**: 线段，从腰部到脚
-- **右腿 (right_leg)**: 线段，从腰部到脚
+Each stick figure consists of the following parts:
+- **Head**: Circle, properties {{ "cx": x-coordinate, "cy": y-coordinate, "r": radius(fixed 20) }}
+- **Body**: Line segment, properties {{ "x1": start-x, "y1": start-y, "x2": end-x, "y2": end-y }}
+- **Left Arm**: Line segment, from shoulder to hand
+- **Right Arm**: Line segment, from shoulder to hand
+- **Left Leg**: Line segment, from waist to foot
+- **Right Leg**: Line segment, from waist to foot
 
-# 坐标系统
+# Coordinate System
 
-- 画布尺寸：800px 宽 × 600px 高
-- 地面位置：y = 520
-- 火柴人标准高度：约120px（头20px半径，身体80px，腿60px）
-- 坐标原点(0,0)在左上角
+- Canvas size: 800px width × 600px height
+- Ground position: y = 520
+- Standard stick figure height: ~120px (head 20px radius, body 80px, legs 60px)
+- Origin (0,0) is at top-left corner
 
-# 人体比例参考
+# Body Proportion Reference
 
-站立姿势示例：
+Standing pose example:
 ```
-头部中心: (400, 380)
-身体: 从(400, 400)到(400, 480) - 长度80px
-左臂: 从(400, 420)到(370, 470) - 肩膀位置在身体上1/4处
-右臂: 从(400, 420)到(430, 470)
-左腿: 从(400, 480)到(380, 540)
-右腿: 从(400, 480)到(420, 540)
+Head center: (400, 380)
+Body: from (400, 400) to (400, 480) - length 80px
+Left arm: from (400, 420) to (370, 470) - shoulder at 1/4 of body
+Right arm: from (400, 420) to (430, 470)
+Left leg: from (400, 480) to (380, 540)
+Right leg: from (400, 480) to (420, 540)
 ```
 
-# 动作设计原则
+# Action Design Principles
 
-1. **物理合理性**: 
-   - 关节连接要自然（肩膀、腰部、膝盖可弯曲）
-   - 重心要平衡（避免不稳定姿势）
-   - 动作要连贯（前后帧过渡自然）
+1. **Physical Reasonableness**: 
+   - Joints should connect naturally (shoulders, waist, knees can bend)
+   - Center of gravity should be balanced (avoid unstable poses)
+   - Actions should be continuous (smooth transitions between frames)
 
-2. **时间安排**:
-   - 每个关键动作至少包含3-5个关键帧
-   - 简单动作: 0.5-1秒 (500-1000ms)
-   - 复杂动作: 1-2秒 (1000-2000ms)
-   - 位移动作: 根据距离调整（约200px/秒的速度）
+2. **Timing**:
+   - Each key action should have at least 3-5 keyframes
+   - Simple actions: 0.5-1 second (500-1000ms)
+   - Complex actions: 1-2 seconds (1000-2000ms)
+   - Movement actions: adjust based on distance (~200px/second speed)
 
-3. **动作类型参考**:
-   - **行走**: 腿交替前后摆动，手臂相反方向摆动，身体轻微上下起伏
-   - **跑步**: 腿摆动幅度更大，身体前倾，手臂摆动幅度增加
-   - **跳跃**: 蹲下(腿弯曲) → 腾空(腿伸直，手臂上扬) → 落地(腿再次弯曲)
-   - **挥手**: 手臂抬起，手部左右摆动2-3次
-   - **弯腰**: 身体线段角度改变，头部位置下降
-   - **击掌**: 两个角色靠近，手臂向前伸展，在中间位置接触
+3. **Action Type Reference**:
+   - **Walking**: Legs alternate back and forth, arms swing in opposite direction, body moves up and down slightly
+   - **Running**: Larger leg swings, body leans forward, increased arm swing amplitude
+   - **Jumping**: Crouch (legs bent) → Airborne (legs straight, arms up) → Land (legs bent again)
+   - **Waving**: Arm raised, hand swings left and right 2-3 times
+   - **Bending**: Body line angle changes, head position lowers
+   - **High-five**: Two characters approach, arms extend forward, contact at middle position
 
-# 输出格式要求
+# Output Format Requirements
 
-请输出标准JSON格式，结构如下：
+Please output standard JSON format with the following structure:
 
 ```json
 {{
-  "title": "动画标题",
-  "description": "动画描述",
+  "title": "Animation title",
+  "description": "Animation description",
   "canvas": {{
     "width": 800,
     "height": 600
@@ -90,7 +90,7 @@ def get_animation_prompt(story: str) -> str:
   "characters": [
     {{
       "id": "char_1",
-      "name": "角色名称",
+      "name": "Character name",
       "color": "#2196F3"
     }}
   ],
@@ -98,7 +98,7 @@ def get_animation_prompt(story: str) -> str:
     {{
       "id": "scene_1",
       "duration": 2000,
-      "description": "场景描述",
+      "description": "Scene description",
       "frames": [
         {{
           "timestamp": 0,
@@ -112,7 +112,7 @@ def get_animation_prompt(story: str) -> str:
               "right_leg": {{ "x1": 200, "y1": 480, "x2": 220, "y2": 540 }}
             }}
           }},
-          "text": "旁白文字（可选）"
+          "text": "Narration text (optional)"
         }}
       ]
     }}
@@ -120,31 +120,31 @@ def get_animation_prompt(story: str) -> str:
 }}
 ```
 
-# 重要提示
+# Important Notes
 
-1. 确保所有坐标在画布范围内 (0-800, 0-600)
-2. 身体各部分必须连接（头底连身体顶，身体底连腿顶等）
-3. 每个场景至少包含起始和结束两个关键帧
-4. 复杂动作需要更多中间帧来保证流畅性
-5. 多角色时注意空间分布，避免重叠
-6. 只输出JSON，不要有其他解释文字
+1. Ensure all coordinates are within canvas bounds (0-800, 0-600)
+2. Body parts must be connected (head bottom connects to body top, body bottom connects to legs top, etc.)
+3. Each scene must contain at least start and end keyframes
+4. Complex actions need more intermediate frames to ensure smoothness
+5. For multiple characters, pay attention to spatial distribution to avoid overlap
+6. Output JSON only, no other explanatory text
 
-# 用户故事
+# User Story
 
 {story}
 
-请根据以上故事生成完整的动画JSON数据。
+Please generate complete animation JSON data based on the above story.
 """
 
 
 def get_system_prompt() -> str:
     """Get system prompt for LLM"""
-    return """你是一个专业的火柴人动画生成专家。你精通：
-1. 人体运动学和物理规律
-2. 动画关键帧设计和时间轴规划
-3. SVG坐标系统和几何计算
-4. 故事叙事和视觉表现
+    return """You are a professional stick figure animation expert. You are proficient in:
+1. Human kinesiology and physics laws
+2. Animation keyframe design and timeline planning
+3. SVG coordinate system and geometric calculations
+4. Story narration and visual presentation
 
-你的任务是将用户的自然语言故事描述，转换为精确的SVG动画关键帧数据。
-你必须输出格式规范的JSON数据，确保动画流畅自然、符合物理规律。
+Your task is to convert user's natural language story descriptions into precise SVG animation keyframe data.
+You must output well-formatted JSON data to ensure animations are smooth, natural, and comply with physics laws.
 """

@@ -17,22 +17,34 @@ pydantic>=2.10.0
 # HTTP & Networking
 requests==2.31.0
 
-# GIF Export
+# GIF Export (requires system cairo library)
+# macOS: brew install cairo
+# Ubuntu: sudo apt-get install libcairo2-dev
 Pillow>=10.0.0
 cairosvg>=2.7.0
+
+# Alternative GIF Export (pure Python, no system dependencies)
+# Uncomment if you prefer not to install cairo
+# svglib>=1.5.1
+# reportlab>=4.0.0
 
 # Production Server (optional, for deployment)
 gunicorn==21.2.0
 gevent>=23.9.1
 
 # ============================================
-# Development & Testing Dependencies
-# Install with: pip install -r requirements.txt
-# For testing only: pip install pytest pytest-cov pytest-asyncio pytest-mock
+# Installation Instructions
 # ============================================
-
-# Testing (optional - uncomment if needed)
-# pytest>=7.4.0
-# pytest-cov>=4.1.0
-# pytest-asyncio>=0.21.0
-# pytest-mock>=3.11.1
+# 
+# 1. Basic installation:
+#    pip install -r requirements.txt
+#
+# 2. For GIF export, install cairo first:
+#    macOS:   brew install cairo
+#    Ubuntu:  sudo apt-get install libcairo2-dev
+#    Windows: Download from https://cairographics.org/
+#
+# 3. Production deployment:
+#    pip install -r requirements.txt
+#    gunicorn and gevent are included for production
+# ============================================

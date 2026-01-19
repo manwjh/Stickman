@@ -24,9 +24,9 @@ const i18n = {
             
             // Mode selector
             'mode.professional': 'Professional',
-            'mode.professional_desc': '16 joints, precise control',
+            'mode.professional_desc': '12-DOF, precise control',
             'mode.simple': 'Simple',
-            'mode.simple_desc': '6 params, fast generation',
+            'mode.simple_desc': '6-DOF, fast generation',
             
             // Examples
             'examples.simple': 'A person walks in from the left, waves enthusiastically, then bows politely to greet everyone.',
@@ -90,9 +90,9 @@ const i18n = {
             
             // Mode selector
             'mode.professional': '专业模式',
-            'mode.professional_desc': '16关节精确控制',
+            'mode.professional_desc': '12自由度精确控制',
             'mode.simple': '简单模式',
-            'mode.simple_desc': '6参数快速生成',
+            'mode.simple_desc': '6自由度快速生成',
             
             // Examples
             'examples.simple': '一个人从左边走进来，热情地挥动双手打招呼，然后礼貌地鞠躬问好。',

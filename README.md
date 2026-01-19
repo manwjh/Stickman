@@ -15,14 +15,14 @@
 
 ## ✨ Features / 特性
 
-- 🤖 **Fully AI-Powered** - Actions generated in real-time by LLM, no predefined templates needed
-  - **完全 AI 驱动** - 动作由 LLM 实时生成，无需预定义模板
+- 🤖 **Hybrid Generation** - Combines LLM real-time generation with optimized action templates for best performance
+  - **混合生成** - 结合 LLM 实时生成和优化的动作模板，性能最佳
 - 🎭 **Natural Language Input** - Describe stories in your language, AI converts them to animations
   - **自然语言输入** - 用中文或英文描述故事，AI 自动转换为动画
 - 🔌 **Unified Access Layer** - LiteLLM supports 100+ LLM providers
   - **统一接入层** - LiteLLM 支持 100+ LLM 提供商
-- 🎨 **Professional Animation** - SVG vector graphics + GSAP animation engine + dual-mode skeleton system (6-parameter simple mode + 16-joint professional mode)
-  - **专业动画** - SVG 矢量图形 + GSAP 动画引擎 + 双模式骨骼系统（6参数简化模式 + 16关节专业模式）
+- 🎨 **Professional Animation** - SVG vector graphics + GSAP animation engine + dual-mode skeleton system (6-DOF simple mode + 12-DOF professional mode)
+  - **专业动画** - SVG 矢量图形 + GSAP 动画引擎 + 双模式骨骼系统（6自由度简化模式 + 12自由度专业模式）
 - 🌐 **Modern Interface** - Responsive Web UI with instant preview
   - **现代化界面** - 响应式 Web UI，即时预览
 - 🌍 **Internationalization** - Built-in support for English and Chinese
@@ -308,11 +308,14 @@ pip install -r requirements.txt
 - [x] Multi-LLM provider support / 多 LLM 提供商支持
 - [x] Internationalization (EN/CN) / 国际化 (中英文)
 - [x] 6-DOF skeleton system / 6自由度骨骼系统
+- [x] 12-DOF skeleton system / 12自由度骨骼系统
 - [x] Caching and rate limiting / 缓存和限流
 - [x] Comprehensive testing / 完整测试覆盖
+- [x] GIF animation export / GIF 动画导出
+- [x] Basic animation templates (walk, wave, bow) / 基础动画模板（行走、挥手、鞠躬）
 - [ ] User authentication / 用户认证
-- [ ] Animation export (MP4/GIF) / 动画导出 (MP4/GIF)
-- [ ] Animation templates library / 动画模板库
+- [ ] MP4 video export / MP4 视频导出
+- [ ] Extended animation templates library / 扩展动画模板库
 - [ ] Real-time collaboration / 实时协作
 - [ ] Docker deployment / Docker 部署
 - [ ] Cloud deployment (AWS/Azure/GCP) / 云部署 (AWS/Azure/GCP)

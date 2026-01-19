@@ -1,5 +1,8 @@
 # 🎬 AI Stick Figure Story Animator / AI火柴人故事动画生成器
 
+![animation_20260119_095927_315](https://github.com/user-attachments/assets/ea4d1dd0-9029-4636-a0d3-56e2c57ec7fc)
+（目前效果并不好，It's not good!
+
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
 [![LiteLLM](https://img.shields.io/badge/LiteLLM-1.57+-green.svg)](https://github.com/BerriAI/litellm)
 [![Flask](https://img.shields.io/badge/Flask-3.0-orange.svg)](https://flask.palletsprojects.com/)

@@ -14,6 +14,7 @@ llm:
     timeout: 60  # 请求超时时间（秒）
     max_retries: 3  # 最大重试次数
     temperature: 0.7  # 生成温度 (0-1)
+    max_tokens: 16384  # 输出token上限
   
   # Anthropic配置
   anthropic:
@@ -22,7 +23,7 @@ llm:
     timeout: 60
     max_retries: 3
     temperature: 0.7
-    max_tokens: 4096
+    max_tokens: 16384
   
   # PerfXCloud配置
   perfxcloud:
@@ -31,8 +32,13 @@ llm:
     timeout: 120
     max_retries: 3
     temperature: 0.7
-    max_tokens: 4096
-    max_context_tokens: 128000
+    max_tokens: 16384  # 通用输出token上限（2026主流水平）
+    max_context_tokens: 128000  # 上下文token上限
+    
+    # 各服务的专门配置（可选，如不设置则使用max_tokens）
+    story_planner_max_tokens: 8192    # Story Planner输出
+    choreographer_max_tokens: 16384   # Choreographer输出（最需要大token）
+    animator_max_tokens: 8192         # Animator输出
 
 # 服务器配置
 server:
@@ -66,3 +72,9 @@ logging:
   level: "INFO"  # 日志级别: DEBUG, INFO, WARNING, ERROR, CRITICAL
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
   file: ""  # 日志文件路径，留空则只输出到控制台
+
+# 调试配置
+debug:
+  save_process_data: true  # 是否保存Pipeline各阶段的中间数据
+  process_data_dir: "debug_logs"  # 调试数据保存目录
+  keep_last_n_sessions: 10  # 保留最近N个会话的数据（0表示全部保留）

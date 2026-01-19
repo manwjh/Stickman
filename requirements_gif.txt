@@ -1,0 +1,11 @@
+# GIF导出依赖（二选一）
+
+# 方案1: cairosvg (推荐)
+# 需要系统安装 cairo
+# macOS: brew install cairo
+# Ubuntu: sudo apt-get install libcairo2-dev
+cairosvg>=2.7.0
+
+# 方案2: svglib (纯Python，无需系统依赖)
+# svglib>=1.5.1
+# reportlab>=4.0.0

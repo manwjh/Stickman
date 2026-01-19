@@ -1,0 +1,132 @@
+# 骨骼配置文件
+# Skeleton System Configuration
+
+# 6 DOF (自由度) 系统 - 经典简化版
+skeleton_6dof:
+  name: "6 Degrees of Freedom"
+  description: "经典简化版，适合简单动作和快速原型"
+  joint_count: 6
+  parameters:
+    - head_x
+    - head_y
+    - body_angle
+    - left_arm_angle
+    - right_arm_angle
+    - left_leg_angle
+    - right_leg_angle
+  
+  # 身体比例（像素）
+  proportions:
+    head_radius: 20
+    body_length: 60
+    arm_length: 40
+    leg_length: 50
+  
+  # 角度限制
+  angle_limits:
+    body_angle: [-45, 45]
+    arm_angle: [-180, 180]
+    leg_angle: [-45, 45]
+  
+  # 适用场景
+  use_cases:
+    - "简单动作"
+    - "快速原型"
+    - "教学演示"
+
+# 12 DOF 系统 - 平衡版（推荐）
+skeleton_12dof:
+  name: "12 Degrees of Freedom"
+  description: "平衡版，推荐用于大多数场景"
+  joint_count: 12
+  joints:
+    - head
+    - neck
+    - waist
+    - left_shoulder
+    - left_hand
+    - right_shoulder
+    - right_hand
+    - left_hip
+    - left_foot
+    - right_hip
+    - right_foot
+  
+  # 标准骨骼长度（像素）
+  bone_lengths:
+    head_radius: 20
+    neck_to_head: 20
+    neck_to_waist: 60
+    shoulder_width: 40
+    arm_length: 50
+    hip_width: 30
+    leg_length: 50
+  
+  # 容差范围
+  tolerance:
+    neck_to_head: 0.3
+    neck_to_waist: 0.3
+    shoulder_width: 0.4
+    arm_length: 0.5
+    hip_width: 0.4
+    leg_length: 0.6
+  
+  # 适用场景
+  use_cases:
+    - "武术动作"
+    - "运动场景"
+    - "故事动画"
+    - "表情丰富的角色"
+
+# 动画流水线配置
+animation_pipeline:
+  # Level 1: Story Planner
+  story_planner:
+    temperature: 0.7
+    max_tokens: 2048
+  
+  # Level 2: Choreographer
+  choreographer:
+    temperature: 0.7
+    max_tokens: 2048
+    keyframes_per_action: [2, 4]  # 最少2个，最多4个
+  
+  # Level 3: Animator
+  animator:
+    temperature: 0.7
+    max_tokens: 4096
+    context_window_size: 3  # 保留前3帧
+  
+  # Level 4: Validator
+  validator:
+    max_retries: 2
+    enable_feedback_loop: true
+  
+  # Level 5: Post Processor
+  post_processor:
+    interpolation_level: 2  # 0-3，越高插值越多
+    smoothing_factor: 0.3   # 0-1，越高越平滑
+    enable_physics: false   # 实验性功能
+
+# 默认设置
+defaults:
+  dof_level: "12dof"  # 默认使用12DOF
+  enable_optimization: true
+  use_cache: true
+  max_retries: 2
+
+# 性能优化
+performance:
+  cache:
+    max_size: 100
+    ttl_seconds: 3600
+  
+  rate_limiting:
+    max_requests: 10
+    time_window: 60
+  
+  timeout:
+    story_planner: 30
+    choreographer: 30
+    animator_per_keyframe: 60
+    total_pipeline: 180

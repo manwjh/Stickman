@@ -2,11 +2,18 @@
 """
 Configuration Loader - Load configuration from YAML files to environment variables
 
-Uses a dual configuration file design:
-- llm_config.yml: LLM API tokens (sensitive info, not committed to Git)
-- config.yml: System configuration (can be committed to Git)
+Configuration design:
+- llm_config.yml: LLM API tokens (set via set_env.sh script to environment variables)
+- config.yml: System configuration (loaded by this module)
+
+API Keys are ONLY read from environment variables set by set_env.sh script.
+No fallback values provided - missing keys will cause immediate failure.
 
 Usage:
+    # Step 1: Set API keys to environment (run once per shell session)
+    source ./set_env.sh
+    
+    # Step 2: Load system configuration
     from backend.config_loader import load_config_to_env
     load_config_to_env()
 
@@ -20,35 +27,25 @@ from pathlib import Path
 
 
 class ConfigLoader:
-    """Configuration loader"""
+    """Configuration loader - reads system config and API keys from environment"""
     
-    def __init__(self, config_file='config.yml', llm_config_file='llm_config.yml'):
+    def __init__(self, config_file='config.yml'):
         """
         Initialize configuration loader
         
         Args:
             config_file: System configuration file path
-            llm_config_file: LLM token configuration file path
         """
         self.config_file = Path(config_file)
-        self.llm_config_file = Path(llm_config_file)
         self.config = None
-        self.llm_config = None
     
     def load(self):
-        """Load configuration files"""
+        """Load system configuration file"""
         # Load system configuration
         if not self.config_file.exists():
             raise FileNotFoundError(
                 f"System configuration file not found: {self.config_file}\n"
                 f"This file should exist in the codebase"
-            )
-        
-        # Load LLM token configuration
-        if not self.llm_config_file.exists():
-            raise FileNotFoundError(
-                f"LLM token configuration file not found: {self.llm_config_file}\n"
-                f"Please copy llm_config.example.yml to llm_config.yml and fill in your API key"
             )
         
         try:
@@ -59,23 +56,21 @@ class ConfigLoader:
             if not self.config:
                 raise ValueError("System configuration file is empty")
             
-            # Read LLM token configuration
-            with open(self.llm_config_file, 'r', encoding='utf-8') as f:
-                self.llm_config = yaml.safe_load(f)
-            
-            if not self.llm_config:
-                raise ValueError("LLM token configuration file is empty")
-            
-            return self.config, self.llm_config
+            return self.config
         
         except yaml.YAMLError as e:
             raise ValueError(f"YAML parsing error: {e}")
         except Exception as e:
-            raise Exception(f"Failed to load configuration files: {e}")
+            raise Exception(f"Failed to load configuration file: {e}")
     
     def to_env(self):
-        """Convert configuration to environment variables"""
-        if not self.config or not self.llm_config:
+        """
+        Convert configuration to environment variables
+        
+        Note: API keys MUST be already set in environment by set_env.py script.
+        This method only sets non-sensitive configuration from config.yml.
+        """
+        if not self.config:
             self.load()
         
         # LLM provider configuration
@@ -86,10 +81,9 @@ class ConfigLoader:
         # OpenAI configuration
         if 'openai' in llm_system_config:
             openai_system = llm_system_config['openai']
-            openai_tokens = self.llm_config.get('openai', {})
             
-            # API key from llm_config.yml
-            os.environ['OPENAI_API_KEY'] = openai_tokens.get('api_key', '')
+            # API key MUST be already set by set_env.py - no fallback
+            # We do NOT set OPENAI_API_KEY here
             
             # Other configs from config.yml
             os.environ['OPENAI_MODEL'] = openai_system.get('model', 'gpt-4-turbo-preview')
@@ -98,14 +92,14 @@ class ConfigLoader:
             os.environ['OPENAI_TIMEOUT'] = str(openai_system.get('timeout', 60))
             os.environ['OPENAI_MAX_RETRIES'] = str(openai_system.get('max_retries', 3))
             os.environ['OPENAI_TEMPERATURE'] = str(openai_system.get('temperature', 0.7))
+            os.environ['OPENAI_MAX_TOKENS'] = str(openai_system.get('max_tokens', 16384))
         
         # Anthropic configuration
         if 'anthropic' in llm_system_config:
             anthropic_system = llm_system_config['anthropic']
-            anthropic_tokens = self.llm_config.get('anthropic', {})
             
-            # API key from llm_config.yml
-            os.environ['ANTHROPIC_API_KEY'] = anthropic_tokens.get('api_key', '')
+            # API key MUST be already set by set_env.py - no fallback
+            # We do NOT set ANTHROPIC_API_KEY here
             
             # Other configs from config.yml
             os.environ['ANTHROPIC_MODEL'] = anthropic_system.get('model', 'claude-3-sonnet-20240229')
@@ -113,15 +107,14 @@ class ConfigLoader:
             os.environ['ANTHROPIC_TIMEOUT'] = str(anthropic_system.get('timeout', 60))
             os.environ['ANTHROPIC_MAX_RETRIES'] = str(anthropic_system.get('max_retries', 3))
             os.environ['ANTHROPIC_TEMPERATURE'] = str(anthropic_system.get('temperature', 0.7))
-            os.environ['ANTHROPIC_MAX_TOKENS'] = str(anthropic_system.get('max_tokens', 4096))
+            os.environ['ANTHROPIC_MAX_TOKENS'] = str(anthropic_system.get('max_tokens', 16384))
         
         # PerfXCloud configuration
         if 'perfxcloud' in llm_system_config:
             perfxcloud_system = llm_system_config['perfxcloud']
-            perfxcloud_tokens = self.llm_config.get('perfxcloud', {})
             
-            # API key from llm_config.yml
-            os.environ['PERFXCLOUD_API_KEY'] = perfxcloud_tokens.get('api_key', '')
+            # API key MUST be already set by set_env.py - no fallback
+            # We do NOT set PERFXCLOUD_API_KEY here
             
             # Other configs from config.yml
             os.environ['PERFXCLOUD_MODEL'] = perfxcloud_system.get('model', 'Qwen3-Next-80B-Instruct')
@@ -129,8 +122,20 @@ class ConfigLoader:
             os.environ['PERFXCLOUD_TIMEOUT'] = str(perfxcloud_system.get('timeout', 120))
             os.environ['PERFXCLOUD_MAX_RETRIES'] = str(perfxcloud_system.get('max_retries', 3))
             os.environ['PERFXCLOUD_TEMPERATURE'] = str(perfxcloud_system.get('temperature', 0.7))
-            os.environ['PERFXCLOUD_MAX_TOKENS'] = str(perfxcloud_system.get('max_tokens', 4096))
+            os.environ['PERFXCLOUD_MAX_TOKENS'] = str(perfxcloud_system.get('max_tokens', 16384))
             os.environ['PERFXCLOUD_MAX_CONTEXT_TOKENS'] = str(perfxcloud_system.get('max_context_tokens', 128000))
+            
+            # 各服务的专门配置（如不设置则使用通用max_tokens）
+            default_max_tokens = perfxcloud_system.get('max_tokens', 16384)
+            os.environ['PERFXCLOUD_STORY_PLANNER_MAX_TOKENS'] = str(
+                perfxcloud_system.get('story_planner_max_tokens', default_max_tokens)
+            )
+            os.environ['PERFXCLOUD_CHOREOGRAPHER_MAX_TOKENS'] = str(
+                perfxcloud_system.get('choreographer_max_tokens', default_max_tokens)
+            )
+            os.environ['PERFXCLOUD_ANIMATOR_MAX_TOKENS'] = str(
+                perfxcloud_system.get('animator_max_tokens', default_max_tokens)
+            )
         
         # Server configuration
         if 'server' in self.config:
@@ -162,8 +167,16 @@ class ConfigLoader:
             os.environ['LOG_FILE'] = logging_config.get('file', '')
     
     def validate(self):
-        """Validate configuration"""
-        if not self.config or not self.llm_config:
+        """
+        Validate configuration
+        
+        Checks that:
+        1. System configuration is valid
+        2. API keys are set in environment variables (by set_env.py)
+        
+        Raises ValueError if validation fails.
+        """
+        if not self.config:
             self.load()
         
         errors = []
@@ -177,45 +190,53 @@ class ConfigLoader:
         elif provider not in ['openai', 'anthropic', 'perfxcloud', 'custom']:
             errors.append(f"Unsupported LLM provider: {provider}")
         
-        # Validate API key for selected provider
+        # Validate API key from ENVIRONMENT VARIABLES (set by set_env.py)
+        # NO fallback - if not in environment, fail immediately
         if provider == 'openai':
-            api_key = self.llm_config.get('openai', {}).get('api_key', '')
-            if not api_key or 'your_' in api_key:
-                errors.append("OpenAI API key not configured (llm_config.yml -> openai.api_key)")
+            api_key = os.getenv('OPENAI_API_KEY')
+            if not api_key:
+                errors.append(
+                    "OPENAI_API_KEY not found in environment variables.\n"
+                    "  Please run: source ./set_env.sh"
+                )
         
         elif provider == 'anthropic':
-            api_key = self.llm_config.get('anthropic', {}).get('api_key', '')
-            if not api_key or 'your_' in api_key:
-                errors.append("Anthropic API key not configured (llm_config.yml -> anthropic.api_key)")
+            api_key = os.getenv('ANTHROPIC_API_KEY')
+            if not api_key:
+                errors.append(
+                    "ANTHROPIC_API_KEY not found in environment variables.\n"
+                    "  Please run: source ./set_env.sh"
+                )
         
         elif provider == 'perfxcloud':
-            api_key = self.llm_config.get('perfxcloud', {}).get('api_key', '')
-            if not api_key or 'your_' in api_key:
-                errors.append("PerfXCloud API key not configured (llm_config.yml -> perfxcloud.api_key)")
+            api_key = os.getenv('PERFXCLOUD_API_KEY')
+            if not api_key:
+                errors.append(
+                    "PERFXCLOUD_API_KEY not found in environment variables.\n"
+                    "  Please run: source ./set_env.sh"
+                )
         
         if errors:
             raise ValueError("Configuration validation failed:\n" + "\n".join(f"  - {e}" for e in errors))
         
         return True
     
-    def get(self, key_path, default=None, from_llm_config=False):
+    def get(self, key_path, default=None):
         """
-        Get configuration value
+        Get configuration value from system config
         
         Args:
             key_path: Configuration path, e.g. 'llm.openai.model'
             default: Default value
-            from_llm_config: Whether to read from LLM config
             
         Returns:
             Configuration value
         """
-        if not self.config or not self.llm_config:
+        if not self.config:
             self.load()
         
-        source = self.llm_config if from_llm_config else self.config
         keys = key_path.split('.')
-        value = source
+        value = self.config
         
         for key in keys:
             if isinstance(value, dict):
@@ -229,7 +250,7 @@ class ConfigLoader:
     
     def display(self):
         """Display current configuration (mask sensitive information)"""
-        if not self.config or not self.llm_config:
+        if not self.config:
             self.load()
         
         def mask_sensitive(obj, path=''):
@@ -253,23 +274,36 @@ class ConfigLoader:
         
         import json
         
+        # Get API keys from environment (masked)
+        env_keys = {}
+        for key in ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'PERFXCLOUD_API_KEY']:
+            value = os.getenv(key)
+            if value:
+                if len(value) > 8:
+                    env_keys[key] = value[:4] + '***' + value[-4:]
+                else:
+                    env_keys[key] = '***'
+            else:
+                env_keys[key] = 'NOT_SET'
+        
         display_config = {
             'system_config': mask_sensitive(self.config),
-            'llm_tokens': mask_sensitive(self.llm_config)
+            'environment_api_keys': env_keys
         }
         
         return json.dumps(display_config, indent=2, ensure_ascii=False)
 
 
-def load_config_to_env(config_file='config.yml', llm_config_file='llm_config.yml'):
+def load_config_to_env(config_file='config.yml'):
     """
     Load configuration to environment variables (convenience function)
     
+    Note: API keys must be already set in environment by set_env.py script.
+    
     Args:
         config_file: System configuration file path
-        llm_config_file: LLM token configuration file path
     """
-    loader = ConfigLoader(config_file, llm_config_file)
+    loader = ConfigLoader(config_file)
     loader.load()
     loader.validate()
     loader.to_env()
@@ -290,13 +324,13 @@ if __name__ == '__main__':
     try:
         loader = ConfigLoader()
         
-        print("1️⃣  Loading configuration files...")
+        print("1️⃣  Loading system configuration...")
         loader.load()
         print("   ✅ System config: config.yml")
-        print("   ✅ LLM tokens: llm_config.yml")
         print()
         
         print("2️⃣  Validating configuration...")
+        print("   Checking environment variables for API keys...")
         loader.validate()
         print("   ✅ Configuration validation passed")
         print()
@@ -314,9 +348,10 @@ if __name__ == '__main__':
         print("✅ Configuration loader test completed")
         print("=" * 60)
         print()
-        print("Configuration file description:")
-        print("  - config.yml: System configuration (can be committed to Git)")
-        print("  - llm_config.yml: API tokens (not committed to Git)")
+        print("Configuration setup:")
+        print("  - Step 1: Run 'source ./set_env.sh' to set API keys")
+        print("  - Step 2: config.yml provides system configuration")
+        print("  - API keys are ONLY read from environment variables")
         
     except FileNotFoundError as e:
         print(f"❌ {e}")

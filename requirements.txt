@@ -1,8 +1,38 @@
+# ============================================
+# AI Stick Figure Story Animator - Dependencies
+# ============================================
+
+# Core Web Framework
 Flask==3.0.0
 Flask-CORS==4.0.0
+
+# Configuration & Environment
 python-dotenv==1.0.0
 PyYAML==6.0.1
+
+# AI/LLM Integration
 litellm>=1.57.0
 pydantic>=2.10.0
+
+# HTTP & Networking
 requests==2.31.0
+
+# GIF Export
+Pillow>=10.0.0
+cairosvg>=2.7.0
+
+# Production Server (optional, for deployment)
 gunicorn==21.2.0
+gevent>=23.9.1
+
+# ============================================
+# Development & Testing Dependencies
+# Install with: pip install -r requirements.txt
+# For testing only: pip install pytest pytest-cov pytest-asyncio pytest-mock
+# ============================================
+
+# Testing (optional - uncomment if needed)
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
+# pytest-asyncio>=0.21.0
+# pytest-mock>=3.11.1

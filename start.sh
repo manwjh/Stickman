@@ -30,66 +30,85 @@ if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1 ; then
     echo ""
 fi
 
-# Check Python version
+# Detect Python command (prioritize venv Python if available)
 PYTHON_CMD=""
-if command -v python3 &> /dev/null; then
+if command -v python &> /dev/null; then
+    PYTHON_CMD="python"
+elif command -v python3 &> /dev/null; then
     PYTHON_CMD="python3"
-elif command -v python &> /dev/null; then
-    PYTHON_VERSION=$(python --version 2>&1 | awk '{print $2}')
-    if [[ "$PYTHON_VERSION" == 3.* ]]; then
-        PYTHON_CMD="python"
-    fi
-fi
-
-if [ -z "$PYTHON_CMD" ]; then
-    echo "❌ Python 3 not found!"
+else
+    echo "❌ Python not found!"
     echo "Please install Python 3.9 or higher"
     exit 1
 fi
 
-# Check if virtual environment exists, create if not
-if [ ! -d "venv" ]; then
-    echo "📦 Creating virtual environment..."
-    $PYTHON_CMD -m venv venv
+# Check if we're already in a virtual environment
+if [ -n "$VIRTUAL_ENV" ]; then
+    echo "🐍 Using Python from venv: $VIRTUAL_ENV"
+else
+    # Check if virtual environment exists, create if not
+    if [ ! -d "venv" ]; then
+        echo "📦 Creating virtual environment..."
+        $PYTHON_CMD -m venv venv
+        if [ $? -ne 0 ]; then
+            echo "❌ Failed to create virtual environment!"
+            exit 1
+        fi
+        echo "✅ Virtual environment created"
+        echo ""
+    fi
+
+    # Activate virtual environment
+    echo "📦 Activating virtual environment..."
+    source venv/bin/activate
     if [ $? -ne 0 ]; then
-        echo "❌ Failed to create virtual environment!"
+        echo "❌ Failed to activate virtual environment!"
         exit 1
     fi
-    echo "✅ Virtual environment created"
-    echo ""
+    
+    # Update PYTHON_CMD to use venv python
+    PYTHON_CMD="python"
 fi
 
-# Activate virtual environment
-echo "📦 Activating virtual environment..."
-source venv/bin/activate
-if [ $? -ne 0 ]; then
-    echo "❌ Failed to activate virtual environment!"
+# Check if API keys are set in environment variables
+echo "🔑 Checking API keys in environment..."
+PROVIDER=$(grep -A 3 "^llm:" config.yml 2>/dev/null | grep "provider:" | awk '{print $2}' | tr -d ' ')
+PROVIDER=${PROVIDER:-openai}
+
+API_KEY_SET=false
+case "$PROVIDER" in
+    openai)
+        [ ! -z "$OPENAI_API_KEY" ] && API_KEY_SET=true
+        ;;
+    anthropic)
+        [ ! -z "$ANTHROPIC_API_KEY" ] && API_KEY_SET=true
+        ;;
+    perfxcloud)
+        [ ! -z "$PERFXCLOUD_API_KEY" ] && API_KEY_SET=true
+        ;;
+esac
+
+if [ "$API_KEY_SET" = false ]; then
+    echo "❌ API key for provider '$PROVIDER' not found in environment!"
+    echo ""
+    echo "Please set API keys first:"
+    echo "  $ source ./set_env.sh"
+    echo ""
+    echo "Then run this script again:"
+    echo "  $ ./start.sh"
+    echo ""
     exit 1
 fi
-
-# Check if llm_config.yml exists
-if [ ! -f "llm_config.yml" ]; then
-    echo "⚠️  Warning: llm_config.yml file not found!"
-    if [ -f "llm_config.example.yml" ]; then
-        echo "Creating from llm_config.example.yml..."
-        cp llm_config.example.yml llm_config.yml
-        echo ""
-        echo "⚠️  Please edit llm_config.yml and add your API key!"
-        echo "Then run this script again."
-        exit 1
-    else
-        echo "❌ llm_config.example.yml not found!"
-        exit 1
-    fi
-fi
+echo "✅ API key found for provider: $PROVIDER"
+echo ""
 
 # Check if requirements are installed
 echo "📚 Checking dependencies..."
-python -c "import flask, flask_cors, dotenv, yaml, litellm, pydantic, requests" 2>/dev/null
+$PYTHON_CMD -c "import flask, flask_cors, dotenv, yaml, litellm, pydantic, requests" 2>/dev/null
 if [ $? -ne 0 ]; then
     echo "📦 Installing dependencies..."
-    pip install --upgrade pip
-    pip install -r requirements.txt
+    $PYTHON_CMD -m pip install --upgrade pip
+    $PYTHON_CMD -m pip install -r requirements.txt
     if [ $? -ne 0 ]; then
         echo "❌ Failed to install dependencies!"
         exit 1
@@ -107,4 +126,8 @@ echo "Press Ctrl+C to stop the server"
 echo ""
 echo "============================================"
 echo ""
-python app.py
+
+# 设置Cairo库路径（macOS需要）
+export DYLD_LIBRARY_PATH="/opt/homebrew/opt/cairo/lib:$DYLD_LIBRARY_PATH"
+
+$PYTHON_CMD app.py

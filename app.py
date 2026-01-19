@@ -1,45 +1,32 @@
 """
 Flask Application - AI Stick Figure Story Animator
 
-Provides RESTful API endpoints to receive user story descriptions
-and generate stick figure animation data through LLM.
-
-Main endpoints:
-- GET  /              - Web interface
-- POST /api/generate - Generate animation
-- GET  /api/health   - Health check
-- GET  /api/version  - Version information
+3-Level Pipeline Architecture:
+- Level 1: Story Analyzer
+- Level 2: Animation Generator (Template-based or LLM batch)
+- Level 3: Animation Optimizer
 
 Author: Shenzhen Wang & AI
 License: MIT
-Version: 0.1.0
 """
 import os
 import sys
-import json
 import logging
-from pathlib import Path
-from flask import Flask, render_template, request, jsonify
+import time
+from flask import Flask
 from flask_cors import CORS
 
-# Version information
-__version__ = "0.1.0"
-
-def get_version():
-    """Get version from VERSION file or fallback to __version__"""
-    try:
-        version_file = Path(__file__).parent / 'VERSION'
-        if version_file.exists():
-            return version_file.read_text().strip()
-    except Exception:
-        pass
-    return __version__
-
-# First, load configuration into environment variables
 from backend.config_loader import load_config_to_env
+from backend.utils.version import get_version
+from backend.services.animation_pipeline import AnimationPipelineV2
+from backend.rate_limiter import PerUserRateLimiter
+from backend.cache_service import get_animation_cache
+from backend.routes import register_main_routes, register_api_routes
+from backend.routes.export import register_export_routes
 
+# Load configuration into environment variables
 try:
-    config_loader = load_config_to_env('config.yml', 'llm_config.yml')
+    config_loader = load_config_to_env('config.yml')
 except FileNotFoundError as e:
     print("=" * 60)
     print("❌ Configuration file not found")
@@ -47,13 +34,7 @@ except FileNotFoundError as e:
     print()
     print(str(e))
     print()
-    print("Please follow these steps:")
-    print("1. Ensure config.yml exists (system configuration)")
-    print("2. Copy LLM token configuration:")
-    print("   cp llm_config.example.yml llm_config.yml")
-    print("3. Edit llm_config.yml and fill in your API key")
-    print("4. Run the program again")
-    print()
+    print("Please ensure config.yml exists in the project root.")
     sys.exit(1)
 except ValueError as e:
     print("=" * 60)
@@ -62,7 +43,17 @@ except ValueError as e:
     print()
     print(str(e))
     print()
-    print("Please check your llm_config.yml file")
+    print("=" * 60)
+    print("🔧 Setup Instructions:")
+    print("=" * 60)
+    print()
+    print("Step 1: Set API keys in environment")
+    print("  $ source ./set_env.sh")
+    print()
+    print("Step 2: Start the application")
+    print("  $ python3 app.py")
+    print()
+    print("Note: API keys must be set via set_env.sh before starting the app.")
     print()
     sys.exit(1)
 except Exception as e:
@@ -73,9 +64,6 @@ except Exception as e:
     print(f"Error: {e}")
     print()
     sys.exit(1)
-
-from backend.llm_service import get_llm_service
-from backend.animation_validator import validate_animation_data
 
 # Configure logging
 log_level = os.getenv('LOG_LEVEL', 'INFO')
@@ -92,119 +80,84 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Initialize Flask app
-app = Flask(__name__)
-CORS(app)
-
-# Configuration
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
-app.config['JSON_AS_ASCII'] = False  # Support non-ASCII characters (Chinese, etc.)
+# 配置 LiteLLM 日志级别为 ERROR，屏蔽 INFO 和 DEBUG 日志
+logging.getLogger('LiteLLM').setLevel(logging.ERROR)
+logging.getLogger('litellm').setLevel(logging.ERROR)
 
 
-@app.route('/')
-def index():
-    """Main page"""
-    return render_template('index.html')
-
-
-@app.route('/api/generate', methods=['POST'])
-def generate_animation():
-    """
-    Generate animation from story description
+def create_app():
+    """Application factory function"""
+    app = Flask(__name__)
+    CORS(app)
     
-    Request JSON:
-        {
-            "story": "Story description in natural language"
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+    app.config['JSON_AS_ASCII'] = False
+    
+    # 注册 debug_logs 静态文件路由
+    from flask import send_from_directory
+    @app.route('/debug_logs/<path:filename>')
+    def serve_debug_logs(filename):
+        """提供 debug_logs 文件访问"""
+        return send_from_directory('debug_logs', filename)
+    
+    rate_limiter = PerUserRateLimiter(
+        requests_per_minute=int(os.getenv('RATE_LIMIT_PER_MINUTE', '20')),
+        burst_size=int(os.getenv('RATE_LIMIT_BURST', '30'))
+    )
+    
+    animation_cache = get_animation_cache()
+    
+    metrics = {
+        'requests_total': 0,
+        'requests_success': 0,
+        'requests_failed': 0,
+        'requests_cached': 0,
+        'requests_rate_limited': 0,
+        'total_latency': 0.0,
+        'start_time': time.time()
+    }
+    
+    should_initialize = os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or \
+                       os.environ.get('WERKZEUG_RUN_MAIN') is None
+    
+    if not should_initialize:
+        logger.info("⏭️  Skipping initialization in reloader monitor process")
+        pipelines = {}
+    else:
+        logger.info("Initializing pipeline system...")
+        pipelines = {
+            '6dof': AnimationPipelineV2(dof_level='6dof', enable_optimization=True),
+            '12dof': AnimationPipelineV2(dof_level='12dof', enable_optimization=True)
         }
+        logger.info(f"✅ Pipelines initialized: {list(pipelines.keys())}")
     
-    Response JSON:
-        {
-            "success": true,
-            "data": { animation_data },
-            "message": "Success message"
-        }
-    """
-    try:
-        # Get story from request
-        data = request.get_json()
-        
-        if not data or 'story' not in data:
-            return jsonify({
-                'success': False,
-                'message': 'Missing story parameter'
-            }), 400
-        
-        story = data['story'].strip()
-        
-        if not story:
-            return jsonify({
-                'success': False,
-                'message': 'Story cannot be empty'
-            }), 400
-        
-        # Generate animation using LLM
-        llm_service = get_llm_service()
-        animation_data = llm_service.generate_animation(story)
-        
-        # Validate animation data
-        try:
-            validated_data = validate_animation_data(animation_data)
-        except ValueError as ve:
-            # If validation fails, return raw data with warning
-            logger.warning(f"Validation warning: {str(ve)}")
-            validated_data = animation_data
-        
-        return jsonify({
-            'success': True,
-            'data': validated_data,
-            'message': 'Animation generated successfully'
-        })
+    app.pipelines = pipelines
+    app.rate_limiter = rate_limiter
+    app.animation_cache = animation_cache
+    app.metrics = metrics
     
-    except Exception as e:
-        logger.error(f"Error generating animation: {str(e)}")
-        return jsonify({
-            'success': False,
-            'message': f'Error generating animation: {str(e)}'
-        }), 500
+    register_main_routes(app)
+    register_api_routes(app)
+    register_export_routes(app)
+    
+    @app.errorhandler(404)
+    def not_found(error):
+        from backend.utils.response import error_response
+        return error_response('Endpoint not found', status_code=404)
+    
+    @app.errorhandler(500)
+    def internal_error(error):
+        from backend.utils.response import error_response
+        logger.error(f"Internal server error: {error}", exc_info=True)
+        return error_response('Internal server error', status_code=500)
+    
+    logger.info("Application initialized successfully")
+    
+    return app
 
 
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    """Health check endpoint"""
-    return jsonify({
-        'status': 'healthy',
-        'version': get_version(),
-        'provider': os.getenv('LLM_PROVIDER', 'openai')
-    })
-
-
-@app.route('/api/version', methods=['GET'])
-def version_info():
-    """Version information endpoint"""
-    return jsonify({
-        'version': get_version(),
-        'name': 'AI Stick Figure Story Animator',
-        'author': 'Shenzhen Wang & AI',
-        'license': 'MIT'
-    })
-
-
-@app.errorhandler(404)
-def not_found(error):
-    """Handle 404 errors"""
-    return jsonify({
-        'success': False,
-        'message': 'Endpoint not found'
-    }), 404
-
-
-@app.errorhandler(500)
-def internal_error(error):
-    """Handle 500 errors"""
-    return jsonify({
-        'success': False,
-        'message': 'Internal server error'
-    }), 500
+# Create app instance
+app = create_app()
 
 
 if __name__ == '__main__':
@@ -228,6 +181,14 @@ if __name__ == '__main__':
     print(f"🎨 Model: {model}")
     print(f"🔧 Debug Mode: {debug}")
     print(f"📊 Log Level: {log_level}")
+    print("=" * 60)
+    print()
+    print("✨ Features:")
+    print("   - 3-Level Pipeline Architecture")
+    print("   - Template-based Generation (Walk, Wave, Bow)")
+    print("   - Batch LLM Generation")
+    print("   - Auto-fix Validation Errors")
+    print("   - DOF Options: 6DOF / 12DOF")
     print("=" * 60)
     print()
     print("📄 Configuration Files:")

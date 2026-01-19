@@ -2,120 +2,298 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎬 AI Stick Figure Story Animator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="description" content="AI火柴人动画生成器 - 输入文字，秒变动画！">
+    <title>🎬 AI火柴人 - 玩转动画创作</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- PWA support -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1 data-i18n="page.title">🎬 AI Stick Figure Story Animator</h1>
-                <p class="subtitle" data-i18n="page.subtitle">Describe your story in natural language, let AI generate smooth stick figure animations</p>
-            </div>
-            <div class="language-switcher">
-                <button id="langToggle" class="lang-btn" title="Switch Language / 切换语言">
+    <!-- Mobile-First Container -->
+    <div class="app-container">
+        
+        <!-- Top Bar - Fixed -->
+        <header class="top-bar">
+            <div class="top-bar-content">
+                <div class="logo-badge">
+                    <span class="logo-emoji">🎬</span>
+                    <span class="logo-text">AI火柴人</span>
+                </div>
+                <button id="langToggle" class="icon-btn" aria-label="切换语言">
                     <span id="langIcon">🌐</span>
-                    <span id="langText">中文</span>
                 </button>
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Input Section -->
-            <section class="input-section card">
-                <h2 data-i18n="input.title">📝 Story Input</h2>
-                <textarea 
-                    id="storyInput" 
-                    class="story-input" 
-                    data-i18n-placeholder="input.placeholder"
-                    placeholder="Enter your story here...&#10;&#10;Example:&#10;A person walks in from the left, sees a ball, jumps excitedly, then bends down to pick up the ball and celebrates by raising it high."
-                    rows="6"
-                ></textarea>
-                
-                <div class="button-group">
-                    <button id="generateBtn" class="btn btn-primary">
-                        <span class="btn-icon">✨</span>
-                        <span data-i18n="input.generate">Generate Animation</span>
-                    </button>
-                    <button id="clearBtn" class="btn btn-secondary">
-                        <span class="btn-icon">🗑️</span>
-                        <span data-i18n="input.clear">Clear</span>
-                    </button>
-                </div>
+        <!-- Main Content Area -->
+        <main class="main-container">
+            
+            <!-- Hero Section - Mobile First -->
+            <section class="hero-section">
+                <h1 class="hero-title" data-i18n="hero.title">
+                    输入文字<br>
+                    <span class="gradient-text">秒变动画</span>
+                </h1>
+                <p class="hero-subtitle" data-i18n="hero.subtitle">
+                    AI帮你画火柴人，让故事动起来 ✨
+                </p>
+            </section>
 
-                <!-- Examples -->
-                <div class="examples">
-                    <h3 data-i18n="examples.title">💡 Example Stories</h3>
-                    <div class="example-chips">
-                        <button class="chip" data-example-key="examples.simple" data-i18n="examples.simple">A person stands and waves hello</button>
-                        <button class="chip" data-example-key="examples.run" data-i18n="examples.run">Someone runs from left to right, then jumps to celebrate</button>
-                        <button class="chip" data-example-key="examples.pickup" data-i18n="examples.pickup">A person walks in, bends down to pick something up, then raises it happily</button>
-                        <button class="chip" data-example-key="examples.duo" data-i18n="examples.duo">Two people stand on opposite sides, walk towards each other, and high-five to celebrate</button>
-                    </div>
+            <!-- Quick Examples - Swipeable -->
+            <section class="quick-examples">
+                <h3 class="section-label" data-i18n="quick.label">👇 点击试试</h3>
+                <div class="example-pills">
+                    <button class="pill" data-example-key="examples.simple">
+                        <span class="pill-emoji">👋</span>
+                        <span class="pill-text">挥手问好</span>
+                    </button>
+                    <button class="pill" data-example-key="examples.run">
+                        <span class="pill-emoji">🏃</span>
+                        <span class="pill-text">奔跑跳跃</span>
+                    </button>
+                    <button class="pill" data-example-key="examples.pickup">
+                        <span class="pill-emoji">📦</span>
+                        <span class="pill-text">捡起宝箱</span>
+                    </button>
+                    <button class="pill" data-example-key="examples.duo">
+                        <span class="pill-emoji">🤝</span>
+                        <span class="pill-text">双人击掌</span>
+                    </button>
+                    <button class="pill" data-example-key="examples.dance">
+                        <span class="pill-emoji">💃</span>
+                        <span class="pill-text">炫酷舞蹈</span>
+                    </button>
+                    <button class="pill" data-example-key="examples.kungfu">
+                        <span class="pill-emoji">🥋</span>
+                        <span class="pill-text">武术表演</span>
+                    </button>
+                    <button class="pill" data-example-key="examples.celebrate">
+                        <span class="pill-emoji">🎉</span>
+                        <span class="pill-text">欢呼庆祝</span>
+                    </button>
                 </div>
             </section>
 
-            <!-- Animation Preview Section -->
-            <section class="preview-section card">
-                <div class="preview-header">
-                    <h2 data-i18n="preview.title">🎥 Animation Preview</h2>
-                    <div class="controls" id="animationControls" style="display: none;">
-                        <button id="playBtn" class="control-btn" data-i18n-title="preview.play" title="Play">▶️</button>
-                        <button id="pauseBtn" class="control-btn" data-i18n-title="preview.pause" title="Pause">⏸️</button>
-                        <button id="restartBtn" class="control-btn" data-i18n-title="preview.restart" title="Restart">🔄</button>
-                        <button id="downloadBtn" class="control-btn" data-i18n-title="preview.download" title="Download">💾</button>
+            <!-- Input Card - Glass Morphism -->
+            <section class="input-card glass-card">
+                <!-- Mode Selector - Compact -->
+                <div class="mode-selector-wrapper">
+                    <div class="mode-selector">
+                        <label class="mode-label">
+                            <input type="radio" name="animation-mode" value="professional" checked>
+                            <div class="mode-card">
+                                <span class="mode-icon">🎨</span>
+                                <div class="mode-content">
+                                    <span class="mode-name" data-i18n="mode.professional">专业模式</span>
+                                    <span class="mode-desc" data-i18n="mode.professional_desc">16关节</span>
+                                </div>
+                            </div>
+                        </label>
+                        
+                        <label class="mode-label">
+                            <input type="radio" name="animation-mode" value="simple">
+                            <div class="mode-card">
+                                <span class="mode-icon">⚡</span>
+                                <div class="mode-content">
+                                    <span class="mode-name" data-i18n="mode.simple">简单模式</span>
+                                    <span class="mode-desc" data-i18n="mode.simple_desc">6参数</span>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="input-header">
+                    <span class="input-emoji">✍️</span>
+                    <span data-i18n="input.label">说说你的故事</span>
+                </div>
+                <textarea 
+                    id="storyInput" 
+                    class="story-textarea" 
+                    data-i18n-placeholder="input.placeholder"
+                    placeholder="比如：小明从左边跑进来，看到一个球，兴奋地跳起来庆祝..."
+                    rows="4"
+                    maxlength="500"
+                ></textarea>
+                <div class="input-footer">
+                    <span id="charCount" class="char-count">0/500</span>
+                    <button id="clearBtn" class="text-btn" data-i18n="input.clear">
+                        <span>🗑️ 清空</span>
+                    </button>
+                </div>
+                
+                <!-- Generate Button - Inside Card -->
+                <button id="generateBtn" class="generate-btn">
+                    <span class="btn-shine"></span>
+                    <span class="btn-content">
+                        <span class="btn-emoji">✨</span>
+                        <span class="btn-text" data-i18n="action.generate">生成动画</span>
+                    </span>
+                </button>
+                <p class="action-hint" data-i18n="action.hint">
+                    💡 Ctrl+Enter 快速生成
+                </p>
+            </section>
+
+            <!-- Animation Preview Card -->
+            <section class="preview-card glass-card">
+                
+                <!-- Loading State -->
+                <div id="loadingState" class="state-container" style="display: none;">
+                    <div class="loading-animation">
+                        <div class="stickman-loader">
+                            <div class="stick-head"></div>
+                            <div class="stick-body"></div>
+                            <div class="stick-arm-left"></div>
+                            <div class="stick-arm-right"></div>
+                            <div class="stick-leg-left"></div>
+                            <div class="stick-leg-right"></div>
+                        </div>
+                    </div>
+                    <p class="loading-text" data-i18n="preview.loading">AI正在创作中...</p>
+                    <div class="loading-progress">
+                        <div class="progress-bar"></div>
                     </div>
                 </div>
 
-                <!-- Loading State -->
-                <div id="loadingState" class="loading-state" style="display: none;">
-                    <div class="spinner"></div>
-                    <p data-i18n="preview.loading">AI is generating animation...</p>
-                </div>
-
                 <!-- Empty State -->
-                <div id="emptyState" class="empty-state">
-                    <div class="empty-icon">🎬</div>
-                    <p data-i18n="preview.empty">Enter a story and click "Generate Animation" to start creating</p>
+                <div id="emptyState" class="state-container">
+                    <div class="empty-animation">
+                        <div class="empty-emoji">🎨</div>
+                        <div class="sparkles">
+                            <span>✨</span>
+                            <span>✨</span>
+                            <span>✨</span>
+                        </div>
+                    </div>
+                    <h3 class="empty-title" data-i18n="preview.empty_title">开始创作吧！</h3>
+                    <p class="empty-text" data-i18n="preview.empty_text">
+                        输入你的故事，让AI帮你变成动画
+                    </p>
                 </div>
 
                 <!-- Animation Canvas -->
                 <div id="animationCanvas" class="animation-canvas" style="display: none;">
-                    <svg id="svgCanvas" width="800" height="600" viewBox="0 0 800 600">
-                        <!-- Ground line -->
+                    <svg id="svgCanvas" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <linearGradient id="groundGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#f0f0f0;stop-opacity:0" />
+                                <stop offset="100%" style="stop-color:#e0e0e0;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Ground -->
                         <line x1="0" y1="550" x2="800" y2="550" stroke="#ddd" stroke-width="2" stroke-dasharray="10,5"/>
-                        
-                        <!-- Animation content will be added here -->
+                        <!-- Animation content -->
                         <g id="animationContent"></g>
-                        
                         <!-- Text overlay -->
                         <text id="animationText" x="400" y="50" text-anchor="middle" 
                               font-size="20" font-weight="bold" fill="#333"></text>
                     </svg>
                 </div>
 
-                <!-- Animation Info -->
-                <div id="animationInfo" class="animation-info" style="display: none;">
-                    <p><strong data-i18n="info.title">Title:</strong><span id="infoTitle"></span></p>
-                    <p><strong data-i18n="info.description">Description:</strong><span id="infoDescription"></span></p>
-                    <p><strong data-i18n="info.scenes">Scenes:</strong><span id="infoScenes"></span></p>
-                    <p><strong data-i18n="info.characters">Characters:</strong><span id="infoCharacters"></span></p>
+                <!-- Keyframe Thumbnails Timeline -->
+                <div id="keyframeThumbnails" class="keyframe-thumbnails" style="display: none;">
+                    <div class="thumbnails-header">
+                        <span class="thumbnails-title">🎞️ 关键帧预览</span>
+                        <button id="toggleThumbnails" class="thumbnails-toggle" title="展开/收起">
+                            <span>▼</span>
+                        </button>
+                    </div>
+                    <div class="thumbnails-scroll" id="thumbnailsScroll">
+                        <div class="thumbnails-container" id="thumbnailsContainer">
+                            <!-- Thumbnails will be generated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Animation Controls - Bottom Sheet Style -->
+                <div id="animationControls" class="controls-bar" style="display: none;">
+                    <button id="restartBtn" class="control-btn" data-i18n-title="control.restart" title="重新播放">
+                        <span>🔄</span>
+                    </button>
+                    <button id="playPauseBtn" class="control-btn primary" data-i18n-title="control.play" title="播放">
+                        <span id="playPauseIcon">▶️</span>
+                    </button>
+                    <div class="control-group">
+                        <button id="shareBtn" class="control-btn" data-i18n-title="control.share" title="分享">
+                            <span>📤</span>
+                        </button>
+                        <button id="downloadBtn" class="control-btn" data-i18n-title="control.download" title="下载SVG">
+                            <span>💾</span>
+                        </button>
+                        <button id="exportGIFBtn" class="control-btn" data-i18n-title="control.gif" title="导出GIF">
+                            <span>🎨</span>
+                        </button>
+                        <button id="exportVideoBtn" class="control-btn" data-i18n-title="control.video" title="导出WebM">
+                            <span>🎬</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Animation Info Tags -->
+                <div id="animationInfo" class="info-tags" style="display: none;">
+                    <span class="info-tag">
+                        <span class="tag-icon">🎬</span>
+                        <span id="infoScenes">0</span> 个场景
+                    </span>
+                    <span class="info-tag">
+                        <span class="tag-icon">👤</span>
+                        <span id="infoCharacters">0</span> 个角色
+                    </span>
                 </div>
             </section>
+
         </main>
 
         <!-- Footer -->
         <footer class="footer">
-            <p data-i18n="footer.text">Powered by AI | Made with ❤️</p>
-            <p class="version">v<span id="appVersion">0.1.0</span></p>
+            <p class="footer-text">
+                <span data-i18n="footer.made">Made with</span> ❤️ 
+                <span data-i18n="footer.powered">by AI</span>
+            </p>
+            <p class="footer-version">v<span id="appVersion">1.0.0</span></p>
         </footer>
+
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="toast"></div>
+    <div id="toast" class="toast">
+        <span class="toast-icon"></span>
+        <span class="toast-message"></span>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="share.title">分享动画</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="share-options">
+                    <button class="share-option" data-share="copy">
+                        <span class="share-icon">🔗</span>
+                        <span data-i18n="share.copy">复制链接</span>
+                    </button>
+                    <button class="share-option" data-share="download">
+                        <span class="share-icon">💾</span>
+                        <span data-i18n="share.download">下载动画</span>
+                    </button>
+                    <button class="share-option" data-share="video">
+                        <span class="share-icon">🎬</span>
+                        <span data-i18n="share.video">导出视频</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confetti Container -->
+    <canvas id="confetti" class="confetti-canvas"></canvas>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>

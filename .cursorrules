@@ -1,0 +1,287 @@
+# Cursor AI 编程规则 / Cursor AI Programming Rules
+
+## AI 交互规范 / AI Interaction Guidelines
+
+### 响应风格
+- **简洁确认**：完成任务后只需简单确认，不要写详细的任务总结报告
+- **直接响应**：回答问题时直接给出答案，避免冗长的铺垫
+- **按需说明**：只在必要时提供详细解释或步骤说明
+
+---
+
+## 核心原则 / Core Principles
+
+### 1. DRY - Don't Repeat Yourself (不要重复自己)
+**最高优先级原则**
+
+#### 规则说明：
+- **避免代码重复**：任何逻辑、数据结构或知识在系统中只应有一个明确的、权威的表示
+- **提取共性**：当发现相同或相似的代码出现两次或以上时，立即重构为可复用的函数、类或模块
+- **配置统一管理**：所有配置项应集中在配置文件中（如 `config.yml`, `llm_config.yml`），而不是硬编码在多处
+- **常量集中定义**：魔术数字和魔术字符串应定义为命名常量或配置项
+- **模板化重复结构**：使用模板、工厂模式或装饰器来处理重复的模式
+
+#### 实践要求：
+```python
+# ❌ 违反 DRY - 重复的验证逻辑
+def create_user(data):
+    if not data.get('name'):
+        raise ValueError("Name is required")
+    if not data.get('email'):
+        raise ValueError("Email is required")
+    # ...
+
+def update_user(data):
+    if not data.get('name'):
+        raise ValueError("Name is required")
+    if not data.get('email'):
+        raise ValueError("Email is required")
+    # ...
+
+# ✅ 遵循 DRY - 提取共用验证逻辑
+def validate_user_data(data):
+    required_fields = ['name', 'email']
+    for field in required_fields:
+        if not data.get(field):
+            raise ValueError(f"{field.capitalize()} is required")
+
+def create_user(data):
+    validate_user_data(data)
+    # ...
+
+def update_user(data):
+    validate_user_data(data)
+    # ...
+```
+
+#### 检查清单：
+- [ ] 代码中是否存在复制粘贴的代码块？
+- [ ] 是否有多个地方维护相同的业务逻辑？
+- [ ] 配置值是否在多处硬编码？
+- [ ] 是否可以用循环、列表推导或函数替代重复代码？
+- [ ] 类似的功能是否可以抽象为基类或工具函数？
+
+---
+
+### 2. SOLID 原则
+
+#### S - Single Responsibility (单一职责)
+- 每个类、函数只做一件事
+- 修改一个类的理由只有一个
+
+#### O - Open/Closed (开闭原则)
+- 对扩展开放，对修改封闭
+- 使用抽象和接口来实现可扩展性
+
+#### L - Liskov Substitution (里氏替换)
+- 子类应该能够替换父类
+- 不要违反父类的契约
+
+#### I - Interface Segregation (接口隔离)
+- 客户端不应依赖它不使用的接口
+- 拆分大接口为多个小接口
+
+#### D - Dependency Inversion (依赖倒置)
+- 依赖抽象而非具体实现
+- 高层模块不应依赖低层模块
+
+---
+
+### 3. 代码可读性与维护性
+
+#### 命名规范：
+- **Python 遵循 PEP 8**
+  - 变量/函数：`snake_case`
+  - 类：`PascalCase`
+  - 常量：`UPPER_SNAKE_CASE`
+  - 私有成员：`_leading_underscore`
+- **命名要有意义**：名称应清晰表达意图，避免缩写（除非是业内通用）
+- **避免误导性命名**：不要用 `list` 命名非列表类型
+
+#### 函数设计：
+- 函数应短小精悍（一般不超过 50 行）
+- 参数不宜过多（建议不超过 4 个，考虑使用对象封装）
+- 使用类型注解提高可读性
+```python
+def process_animation(
+    scene_data: dict,
+    skeleton_type: str = "12dof",
+    smooth_factor: float = 0.5
+) -> dict:
+    """处理动画数据
+    
+    Args:
+        scene_data: 场景数据字典
+        skeleton_type: 骨骼类型，支持 6dof/12dof
+        smooth_factor: 平滑系数，范围 [0, 1]
+    
+    Returns:
+        处理后的动画数据
+    """
+    pass
+```
+
+#### 注释规范：
+- **代码应自解释**：优先写清晰的代码而非依赖注释
+- **必要时添加文档字符串**：公共 API、复杂算法需要详细说明
+- **避免废话注释**：不要注释显而易见的内容
+- **及时更新注释**：代码修改时同步更新相关注释
+
+---
+
+### 4. 错误处理与安全
+
+#### 异常处理：
+- **精确捕获异常**：避免使用 `except Exception` 捕获所有异常
+- **提供上下文信息**：异常消息应包含足够的调试信息
+- **不要吞掉异常**：记录或重新抛出异常
+```python
+# ✅ 好的异常处理
+try:
+    result = call_llm_api(prompt)
+except requests.Timeout as e:
+    logger.error(f"LLM API timeout for prompt: {prompt[:50]}")
+    raise APITimeoutError(f"Request timeout after 30s") from e
+except requests.RequestException as e:
+    logger.error(f"LLM API request failed: {e}")
+    raise APIError(f"Failed to call LLM API: {str(e)}") from e
+```
+
+#### 安全性：
+- **验证所有输入**：永远不要信任用户输入
+- **使用参数化查询**：防止注入攻击
+- **敏感信息保护**：API 密钥、密码不要硬编码，使用环境变量
+- **限流和熔断**：防止滥用和雪崩
+
+---
+
+### 5. 性能与优化
+
+#### 优化原则：
+- **过早优化是万恶之源**：先保证正确性，再优化性能
+- **基于数据优化**：使用性能分析工具找到真正的瓶颈
+- **缓存合理使用**：对重复计算和 I/O 操作使用缓存
+- **异步优化**：I/O 密集型操作考虑异步处理
+
+#### 资源管理：
+- **使用上下文管理器**：确保资源正确释放
+```python
+# ✅ 使用 with 语句
+with open('file.txt', 'r') as f:
+    data = f.read()
+
+# ✅ 自定义上下文管理器
+class Timer:
+    def __enter__(self):
+        self.start = time.time()
+        return self
+    
+    def __exit__(self, *args):
+        self.duration = time.time() - self.start
+        logger.info(f"Operation took {self.duration:.2f}s")
+```
+
+---
+
+### 6. 测试驱动
+
+#### 测试原则：
+- **关键功能必须有测试**：核心业务逻辑、工具函数应有单元测试
+- **测试应独立且可重复**：不依赖外部状态和顺序
+- **使用描述性测试名称**：`test_user_creation_fails_with_invalid_email`
+- **边界条件测试**：测试空值、极限值、异常情况
+
+#### 测试覆盖：
+- 单元测试：测试单个函数/方法
+- 集成测试：测试模块间交互
+- 端到端测试：测试完整用户流程
+
+---
+
+### 7. 项目特定规则（针对本项目）
+
+#### 动画系统：
+- **骨骼系统抽象**：新增骨骼类型应继承基类，复用共同逻辑
+- **约束验证统一**：所有骨骼类型使用统一的约束验证器
+- **LLM 调用集中管理**：通过 `animator_llm.py` 统一处理 LLM 调用
+- **缓存策略**：对 LLM 响应、场景规划结果使用缓存
+
+#### 配置管理：
+- **分层配置**：`config.yml`（系统配置）、`llm_config.yml`（LLM 配置）、`skeleton_config.yml`（骨骼配置）
+- **配置验证**：启动时验证配置完整性和正确性
+- **敏感信息**：API 密钥等敏感信息使用环境变量或独立的未提交文件
+
+#### API 设计：
+- **统一响应格式**：使用 `utils/response.py` 中的标准响应格式
+- **版本管理**：API 版本号通过 `utils/version.py` 统一管理
+- **错误码标准化**：定义清晰的错误码体系
+
+---
+
+### 8. Git 提交规范
+
+#### Commit Message 格式：
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+#### Type 类型：
+- `feat`: 新功能
+- `fix`: 修复 bug
+- `docs`: 文档更新
+- `style`: 代码格式调整（不影响功能）
+- `refactor`: 重构（既不是新功能也不是修复 bug）
+- `perf`: 性能优化
+- `test`: 测试相关
+- `chore`: 构建过程或辅助工具变动
+
+#### 示例：
+```
+feat(animator): add new skeleton support
+
+- Implement new skeleton model with extended joint system
+- Add validation constraints for new joint types
+- Update documentation with usage examples
+
+Closes #123
+```
+
+---
+
+### 9. 代码审查检查清单
+
+在提交代码前，确保：
+- [ ] 遵循 DRY 原则，无重复代码
+- [ ] 代码通过所有测试
+- [ ] 添加了必要的文档和注释
+- [ ] 遵循项目的命名和格式规范
+- [ ] 处理了所有错误情况
+- [ ] 敏感信息已妥善处理
+- [ ] 性能考虑适当（避免明显的性能问题）
+- [ ] 向后兼容性（如果是公共 API）
+
+---
+
+### 10. 持续改进
+
+- **重构是持续的**：发现代码坏味道时及时重构
+- **学习最佳实践**：关注社区最佳实践和设计模式
+- **代码审查**：通过 PR 和 Code Review 提高代码质量
+- **文档同步**：代码变更时及时更新相关文档
+
+---
+
+## 参考资源
+
+- [PEP 8 -- Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
+- [Clean Code by Robert C. Martin](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882)
+- [The Pragmatic Programmer](https://pragprog.com/titles/tpp20/the-pragmatic-programmer-20th-anniversary-edition/)
+- [Python Type Hints](https://docs.python.org/3/library/typing.html)
+
+---
+
+**记住：好的代码不仅能运行，更要易读、易维护、易扩展。DRY 原则是实现这一目标的基石。**

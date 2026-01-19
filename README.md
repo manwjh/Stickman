@@ -7,7 +7,7 @@
 [![LiteLLM](https://img.shields.io/badge/LiteLLM-1.57+-green.svg)](https://github.com/BerriAI/litellm)
 [![Flask](https://img.shields.io/badge/Flask-3.0-orange.svg)](https://flask.palletsprojects.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.4.0-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/Version-1.0.1-blue.svg)](VERSION)
 
 > Describe stories in natural language and let AI automatically generate smooth stick figure SVG animations
 > 
@@ -112,18 +112,47 @@ stickman/
 ├── set_env.sh                  # Environment setup / 环境设置
 │
 ├── README.md                   # Project documentation / 项目文档
+├── QUICK_START.md              # Quick start guide / 快速开始指南
 ├── LICENSE                     # MIT License / MIT 许可证
-├── VERSION                     # Version number (0.4.0) / 版本号 (0.4.0)
+├── VERSION                     # Version number (1.0.1) / 版本号 (1.0.1)
 │
 ├── backend/                    # Backend core modules / 后端核心模块
 │   ├── config_loader.py       # Configuration loader / 配置加载器
-│   ├── multilevel_llm.py      # Multi-level LLM service / 多层次 LLM 服务
-│   ├── simple_6dof.py         # 6-parameter simple mode (auto-converts to 16 joints) / 6参数简化模式（自动转换为16关节）
-│   ├── prompt_template.py     # Prompt templates / Prompt 模板
-│   ├── animation_validator.py # Data validation / 数据验证
+│   ├── llm_client.py          # LLM client / LLM 客户端
 │   ├── cache_service.py       # Caching service / 缓存服务
 │   ├── rate_limiter.py        # Rate limiting / 限流器
-│   └── security.py            # Security utilities / 安全工具
+│   ├── security.py            # Security utilities / 安全工具
+│   │
+│   ├── models/                # Data models / 数据模型
+│   │   ├── base_skeleton.py   # Base skeleton class / 骨骼基类
+│   │   ├── skeleton_6dof.py   # 6-DOF skeleton / 6自由度骨骼
+│   │   ├── skeleton_12dof.py  # 12-DOF skeleton / 12自由度骨骼
+│   │   ├── skeleton_factory.py # Skeleton factory / 骨骼工厂
+│   │   ├── scene_plan.py      # Scene plan model / 场景规划模型
+│   │   └── context_memory.py  # Context memory / 上下文记忆
+│   │
+│   ├── services/              # Business services / 业务服务
+│   │   ├── animation_pipeline.py  # Animation pipeline / 动画流水线
+│   │   ├── story_analyzer.py      # Story analyzer / 故事分析器
+│   │   ├── animation_generator.py # Animation generator / 动画生成器
+│   │   ├── animation_optimizer.py # Animation optimizer / 动画优化器
+│   │   ├── gif_exporter.py        # GIF exporter / GIF 导出器
+│   │   └── templates/             # Action templates / 动作模板
+│   │       ├── template_engine.py # Template engine / 模板引擎
+│   │       └── actions/           # Action library / 动作库
+│   │           ├── walk.py        # Walk action / 行走动作
+│   │           ├── wave.py        # Wave action / 挥手动作
+│   │           └── bow.py         # Bow action / 鞠躬动作
+│   │
+│   ├── routes/                # API routes / API 路由
+│   │   ├── main.py            # Main routes / 主路由
+│   │   ├── api.py             # API routes / API 路由
+│   │   └── export.py          # Export routes / 导出路由
+│   │
+│   └── utils/                 # Utility modules / 工具模块
+│       ├── response.py        # Response helpers / 响应辅助
+│       ├── version.py         # Version info / 版本信息
+│       └── debug_logger.py    # Debug logger / 调试日志
 │
 ├── templates/                  # HTML templates / HTML 模板
 │   └── index.html
@@ -138,14 +167,6 @@ stickman/
 │   ├── manifest.json          # PWA manifest / PWA 清单
 │   └── sw.js                  # Service Worker
 │
-├── tests/                      # Test suite / 测试套件
-│   ├── test_llm_service.py    # LLM service tests / LLM 服务测试
-│   ├── test_skeleton.py       # Skeleton system tests / 骨骼系统测试
-│   ├── test_validator.py      # Validator tests / 验证器测试
-│   ├── test_cache_ratelimit.py # Cache & rate limit tests / 缓存和限流测试
-│   ├── test_security.py       # Security tests / 安全测试
-│   └── test_integration.py    # Integration tests / 集成测试
-│
 └── docs/                       # Documentation / 文档
     ├── CHANGELOG.md           # Version history / 版本历史
     ├── CONTRIBUTING.md        # Contribution guide / 贡献指南
@@ -158,7 +179,6 @@ stickman/
     └── PRODUCTION_DEPLOYMENT.md # Production deployment / 生产部署
 ```
 
-See: [Detailed Project Structure](PROJECT_STRUCTURE.md) / 详见: [项目结构详解](PROJECT_STRUCTURE.md)
 
 ## ⚙️ Configuration / 配置说明
 
@@ -243,22 +263,6 @@ Using LiteLLM unified access layer, supports:
 - ✅ Sensitive data isolation / 敏感数据隔离
 - ✅ Environment variable protection / 环境变量保护
 
-## 🧪 Testing / 测试
-
-```bash
-# Run all tests / 运行所有测试
-pytest
-
-# Run specific test file / 运行特定测试文件
-pytest tests/test_llm_service.py
-
-# Run with coverage / 生成覆盖率报告
-pytest --cov=backend --cov-report=html
-
-# View coverage report / 查看覆盖率报告
-open htmlcov/index.html
-```
-
 ## 📖 Documentation / 文档
 
 - [Quick Start](docs/GETTING_STARTED.md) - Get up and running in 5 minutes / [快速开始](docs/zh-CN/GETTING_STARTED.md) - 5 分钟上手
@@ -284,11 +288,8 @@ cd stickman
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate / Windows: venv\Scripts\activate
 
-# Install dependencies (including test dependencies) / 安装依赖（包含测试依赖）
+# Install dependencies / 安装依赖
 pip install -r requirements.txt
-
-# Run tests / 运行测试
-pytest
 
 # Start development server / 启动开发服务器
 ./start.sh
@@ -299,7 +300,7 @@ pytest
 - Follow PEP 8 for Python code / Python 代码遵循 PEP 8 规范
 - Use meaningful variable and function names / 使用有意义的变量和函数名
 - Add docstrings for all public functions / 为所有公共函数添加文档字符串
-- Write tests for new features / 为新功能编写测试
+- Follow DRY principle / 遵循 DRY 原则
 
 ## 🗺️ Roadmap / 路线图
 
@@ -341,7 +342,7 @@ pytest
 See [CHANGELOG.md](docs/CHANGELOG.md) for detailed version history.
 详见 [CHANGELOG.md](docs/CHANGELOG.md)
 
-**Current Version / 当前版本**: 0.4.0 (2026-01-17)
+**Current Version / 当前版本**: 1.0.1 (2026-01-19)
 
 ---
 

@@ -17,12 +17,10 @@
 - [API 文档](API.md) - RESTful API 接口文档
 - [开发指南](DEVELOPMENT.md) - 二次开发和扩展指南
 
-## 📊 技术报告
+## 🚀 生产部署
 
-- [LiteLLM 集成报告](reports/LITELLM_INTEGRATION.md) - LiteLLM 接入层实现
-- [PerfXCloud 验证报告](reports/PERFXCLOUD_VERIFICATION.md) - PerfXCloud API 验证
-- [武术场景测试报告](reports/WUSHU_TEST_REPORT.md) - 复杂场景生成测试
-- [调用流程详解](reports/CALL_FLOW.md) - 完整的系统调用流程
+- [生产环境部署](PRODUCTION_DEPLOYMENT.md) - 生产环境部署指南
+- [更新日志](CHANGELOG.md) - 版本更新历史
 
 ## 🎯 按需查找
 
@@ -40,24 +38,36 @@
 **二次开发**
 → [开发指南](DEVELOPMENT.md) → [系统架构](ARCHITECTURE.md)
 
-**了解技术细节**
-→ [技术报告](reports/)
+**生产部署**
+→ [生产环境部署](PRODUCTION_DEPLOYMENT.md)
 
 ## 📁 文档结构
 
 ```
 docs/
-├── INDEX.md                    # 本文件
-├── GETTING_STARTED.md          # 快速开始
-├── CONFIG.md                   # 配置指南
-├── API.md                      # API 文档
-├── DEVELOPMENT.md              # 开发文档
-├── ARCHITECTURE.md             # 系统架构
-└── reports/                    # 技术报告
-    ├── LITELLM_INTEGRATION.md
-    ├── PERFXCLOUD_VERIFICATION.md
-    ├── WUSHU_TEST_REPORT.md
-    └── CALL_FLOW.md
+├── INDEX.md                        # 本文件 - 文档索引
+├── GETTING_STARTED.md              # 快速开始指南
+├── CONFIG.md                       # 配置指南
+├── API.md                          # API 文档
+├── DEVELOPMENT.md                  # 开发指南
+├── ARCHITECTURE.md                 # 系统架构
+├── PRODUCTION_DEPLOYMENT.md        # 生产部署
+├── SKELETON_QUICKSTART.md          # 骨骼系统快速开始
+├── CHANGELOG.md                    # 更新日志
+├── CONTRIBUTING.md                 # 贡献指南
+├── CODE_OF_CONDUCT.md              # 行为准则
+├── en/                             # 英文文档
+│   ├── INDEX.md
+│   ├── GETTING_STARTED.md
+│   ├── CONFIG.md
+│   └── API.md
+└── zh-CN/                          # 中文文档
+    ├── INDEX.md
+    ├── GETTING_STARTED.md
+    ├── CONFIG.md
+    ├── API.md
+    ├── ARCHITECTURE.md
+    └── DEVELOPMENT.md
 ```
 
 ## 🤝 贡献文档
@@ -77,4 +87,4 @@ docs/
 
 ---
 
-**最后更新**: 2026-01-17
+**最后更新**: 2026-01-19
